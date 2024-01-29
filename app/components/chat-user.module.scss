@@ -1,0 +1,110 @@
+.chat-user {
+  align-items: flex-start;
+  background-color: #ffffff;
+  border: 1px solid;
+  border-color: #222222;
+  border-radius: 22px;
+  display: inline-flex;
+  gap: 10px;
+  justify-content: center;
+  padding: 16px;
+  position: relative;
+  width: 282px;
+  margin-top: 20px;
+
+  .frame {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+
+    .div {
+      color: #222222;
+      font-family: "Pretendard Variable-Medium", Helvetica;
+      font-size: 15px;
+      font-weight: 400;
+      letter-spacing: 0;
+      line-height: 24px;
+      margin-top: -1px;
+      position: relative;
+      text-align: center;
+      width: fit-content;
+
+      .text-wrapper {
+        font-weight: 500;
+      }
+    }
+
+    .span {
+      font-family: "Pretendard Variable-Bold", Helvetica;
+      font-weight: 700;
+    }
+  }
+
+  .input {
+    height: 64px;
+    // margin-right: -2px;
+    position: relative;
+    width: 560px;
+  }
+
+  .div-2 {
+    color: #999999;
+    font-family: "Pretendard Variable-Medium", Helvetica;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 18px;
+    position: relative;
+    text-align: center;
+    width: fit-content;
+
+    .text-wrapper-2 {
+      color: #999999;
+      font-family: "Pretendard Variable-Medium", Helvetica;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0;
+      line-height: 18px;
+    }
+
+    .text-wrapper-3 {
+      @extend .text-wrapper-2;
+      text-decoration: underline;
+    }
+  }
+
+  .div-wrapper {
+    align-items: center;
+    background-color: #222222;
+    border-radius: 999px;
+    display: flex;
+    gap: 10px;
+    height: 24px;
+    justify-content: center;
+    padding: 15px 10px;
+    position: relative;
+    width: 88px;
+
+    .text-wrapper-4 {
+      color: #ffffff;
+      font-family: "Pretendard Variable-Medium", Helvetica;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0;
+      line-height: 15px;
+      margin-top: -1.5px;
+      position: relative;
+      white-space: nowrap;
+
+      border: none;
+      background: none;
+      padding: 0;
+
+      width: 88px;
+      height: 44px;
+    }
+  }
+}

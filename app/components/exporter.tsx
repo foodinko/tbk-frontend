@@ -307,7 +307,9 @@ export function PreviewActions(props: {
     setShouldExport(false);
 
     var api: ClientApi;
-    if (config.modelConfig.model === "gemini-pro") {
+    if (config.modelConfig.model === "foodinko-tbk") {
+      api = new ClientApi(ModelProvider.FoodinkoTbk);
+    } else if (config.modelConfig.model === "gemini-pro") {
       api = new ClientApi(ModelProvider.GeminiPro);
     } else {
       api = new ClientApi(ModelProvider.GPT);
@@ -538,9 +540,9 @@ export function ImagePreviewer(props: {
           </div>
 
           <div>
-            <div className={styles["main-title"]}>NextChat</div>
+            <div className={styles["main-title"]}>BOKI</div>
             <div className={styles["sub-title"]}>
-              github.com/Yidadaa/ChatGPT-Next-Web
+              https://www.foodinko.com
             </div>
             <div className={styles["icons"]}>
               <ExportAvatar avatar={config.avatar} />

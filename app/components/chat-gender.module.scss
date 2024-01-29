@@ -1,0 +1,25 @@
+.chat-gender {
+  align-items: center;
+  background-color: white;
+  border: 1px solid;
+  border-radius: 999px;
+  display: inline-flex;
+  gap: 10px;
+  padding: 10px 20px;
+  position: relative;
+  cursor: pointer;
+  margin-right: 5px;
+  top: 22px;
+}
+
+.active {
+  border-color: black;
+}
+
+.disabled {
+  border-color: #dddddd;
+}
+
+.chat-gender:last-child {
+  margin-right: 0;
+}

@@ -397,7 +397,7 @@
 
 .chat-message-user > .chat-message-container > .chat-message-item {
   background-color: var(--second);
-
+  
   &:hover {
     min-width: 0;
   }
@@ -416,6 +416,20 @@
   .chat-input-actions {
     .chat-input-action {
       margin-bottom: 10px;
+    }
+  }
+
+  .label-chatgpt {
+    .chatgpt {
+      color: #999999;
+      font-family: "Pretendard Variable-Medium", Helvetica;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 50;
+      line-height: 18px;
+      position: relative;
+      text-align: center;
+      top: 10px;
     }
   }
 }
@@ -504,7 +518,7 @@
 
   position: absolute;
   right: 30px;
-  bottom: 32px;
+  bottom: 103px;
 }
 
 @media only screen and (max-width: 600px) {
@@ -513,6 +527,17 @@
   }
 
   .chat-input-send {
-    bottom: 30px;
+    bottom: 92px;
   }
+}
+
+.disabled-input {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.disabled-button {
+  opacity: 0.3;
+  pointer-events: none;
+  cursor: not-allowed;
 }

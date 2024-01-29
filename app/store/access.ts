@@ -18,7 +18,8 @@ const DEFAULT_ACCESS_STATE = {
   accessCode: "",
   useCustomConfig: false,
 
-  provider: ServiceProvider.OpenAI,
+  //provider: ServiceProvider.OpenAI,
+  provider: ServiceProvider.Foodinko,
 
   // openai
   openaiUrl: DEFAULT_OPENAI_URL,

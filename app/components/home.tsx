@@ -29,6 +29,7 @@ import { AuthPage } from "./auth";
 import { getClientConfig } from "../config/client";
 import { ClientApi } from "../client/api";
 import { useAccessStore } from "../store";
+import { useUserStore } from "../store";
 
 export function Loading(props: { noLogo?: boolean }) {
   return (
@@ -171,7 +172,9 @@ export function useLoadData() {
   const config = useAppConfig();
 
   var api: ClientApi;
-  if (config.modelConfig.model === "gemini-pro") {
+  if (config.modelConfig.model === "foodinko-tbk") {
+    api = new ClientApi(ModelProvider.FoodinkoTbk);
+  } else if (config.modelConfig.model === "gemini-pro") {
     api = new ClientApi(ModelProvider.GeminiPro);
   } else {
     api = new ClientApi(ModelProvider.GPT);
@@ -190,13 +193,25 @@ export function Home() {
   useLoadData();
   useHtmlLang();
 
+  const handleFetchUserInfo = () => {
+    // useUserStore.getState().registerUser("테오1112", "남성");  // for test
+    console.log("[home.tsx] handleFetchUserInfo cookie value: " + useUserStore.getState().cookieValue);
+    if (useUserStore.getState().hasCookieValue()) {
+      console.log("[home.ts] handleFetchUserInfo cookie value is not empty");
+      useUserStore.getState().fetchUserInfo(useUserStore.getState().cookieValue);
+    } else {
+      console.log("[home.tsx] handleFetchUserInfo cookie value is empty");
+    }
+  }
+
   useEffect(() => {
     console.log("[Config] got config from build time", getClientConfig());
     useAccessStore.getState().fetch();
+    handleFetchUserInfo();
   }, []);
 
   if (!useHasHydrated()) {
-    return <Loading />;
+    return <Loading noLogo />;
   }
 
   return (

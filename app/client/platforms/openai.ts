@@ -149,6 +149,8 @@ export class ChatGPTApi implements LLMApi {
 
         controller.signal.onabort = finish;
 
+        console.log("[OpenAI] chatPath, chatPayload", chatPath, chatPayload);
+
         fetchEventSource(chatPath, {
           ...chatPayload,
           async onopen(res) {
@@ -185,6 +187,9 @@ export class ChatGPTApi implements LLMApi {
               if (extraInfo) {
                 responseTexts.push(extraInfo);
               }
+
+              console.log("[OpenAI] responseText", responseText);
+              console.log("[OpenAI] responseTexts", responseTexts);
 
               responseText = responseTexts.join("\n\n");
 

@@ -7,6 +7,7 @@ import React, {
   useCallback,
   Fragment,
 } from "react";
+import moment from "moment";
 
 import SendWhiteIcon from "../icons/send-white.svg";
 import BrainIcon from "../icons/brain.svg";
@@ -21,7 +22,7 @@ import MaxIcon from "../icons/max.svg";
 import MinIcon from "../icons/min.svg";
 import ResetIcon from "../icons/reload.svg";
 import BreakIcon from "../icons/break.svg";
-import SettingsIcon from "../icons/chat-settings.svg";
+import getSubTitleForUserMessageCountIcon from "../icons/chat-getSubTitleForUserMessageCount.svg";
 import DeleteIcon from "../icons/clear.svg";
 import PinIcon from "../icons/pin.svg";
 import EditIcon from "../icons/rename.svg";
@@ -39,13 +40,22 @@ import {
   ChatMessage,
   SubmitKey,
   useChatStore,
-  BOT_HELLO,
   createMessage,
   useAccessStore,
   Theme,
   useAppConfig,
+  MAX_MESSAGE_COUNT,
+  SESSION_LIMIT_MIN,
   DEFAULT_TOPIC,
   ModelType,
+  useUserStore,
+  BOT_HELLO,
+  BOT_ASK_GENDER,
+  BOT_ASK_NAME,
+  BOT_WHAT_KIND_TBK,
+  BOT_EMPTY_COUNT,
+  BOT_WELCOME_BACK,
+  BOT_WELCOME_LONG_TIME
 } from "../store";
 
 import {
@@ -62,6 +72,8 @@ import { Prompt, usePromptStore } from "../store/prompt";
 import Locale from "../locales";
 
 import { IconButton } from "./button";
+import { ChatUser } from "./chat-user";
+import { ChatGender } from "./chat-gender";
 import styles from "./chat.module.scss";
 
 import {
@@ -93,100 +105,6 @@ import { useAllModels } from "../utils/hooks";
 const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
 });
-
-export function SessionConfigModel(props: { onClose: () => void }) {
-  const chatStore = useChatStore();
-  const session = chatStore.currentSession();
-  const maskStore = useMaskStore();
-  const navigate = useNavigate();
-
-  return (
-    <div className="modal-mask">
-      <Modal
-        title={Locale.Context.Edit}
-        onClose={() => props.onClose()}
-        actions={[
-          <IconButton
-            key="reset"
-            icon={<ResetIcon />}
-            bordered
-            text={Locale.Chat.Config.Reset}
-            onClick={async () => {
-              if (await showConfirm(Locale.Memory.ResetConfirm)) {
-                chatStore.updateCurrentSession(
-                  (session) => (session.memoryPrompt = ""),
-                );
-              }
-            }}
-          />,
-          <IconButton
-            key="copy"
-            icon={<CopyIcon />}
-            bordered
-            text={Locale.Chat.Config.SaveAs}
-            onClick={() => {
-              navigate(Path.Masks);
-              setTimeout(() => {
-                maskStore.create(session.mask);
-              }, 500);
-            }}
-          />,
-        ]}
-      >
-        <MaskConfig
-          mask={session.mask}
-          updateMask={(updater) => {
-            const mask = { ...session.mask };
-            updater(mask);
-            chatStore.updateCurrentSession((session) => (session.mask = mask));
-          }}
-          shouldSyncFromGlobal
-          extraListItems={
-            session.mask.modelConfig.sendMemory ? (
-              <ListItem
-                className="copyable"
-                title={`${Locale.Memory.Title} (${session.lastSummarizeIndex} of ${session.messages.length})`}
-                subTitle={session.memoryPrompt || Locale.Memory.EmptyContent}
-              ></ListItem>
-            ) : (
-              <></>
-            )
-          }
-        ></MaskConfig>
-      </Modal>
-    </div>
-  );
-}
-
-function PromptToast(props: {
-  showToast?: boolean;
-  showModal?: boolean;
-  setShowModal: (_: boolean) => void;
-}) {
-  const chatStore = useChatStore();
-  const session = chatStore.currentSession();
-  const context = session.mask.context;
-
-  return (
-    <div className={styles["prompt-toast"]} key="prompt-toast">
-      {props.showToast && (
-        <div
-          className={styles["prompt-toast-inner"] + " clickable"}
-          role="button"
-          onClick={() => props.setShowModal(true)}
-        >
-          <BrainIcon />
-          <span className={styles["prompt-toast-content"]}>
-            {Locale.Context.Toast(context.length)}
-          </span>
-        </div>
-      )}
-      {props.showModal && (
-        <SessionConfigModel onClose={() => props.setShowModal(false)} />
-      )}
-    </div>
-  );
-}
 
 function useSubmitHandler() {
   const config = useAppConfig();
@@ -405,211 +323,6 @@ function useScrollToBottom() {
   };
 }
 
-export function ChatActions(props: {
-  showPromptModal: () => void;
-  scrollToBottom: () => void;
-  showPromptHints: () => void;
-  hitBottom: boolean;
-}) {
-  const config = useAppConfig();
-  const navigate = useNavigate();
-  const chatStore = useChatStore();
-
-  // switch themes
-  const theme = config.theme;
-  function nextTheme() {
-    const themes = [Theme.Auto, Theme.Light, Theme.Dark];
-    const themeIndex = themes.indexOf(theme);
-    const nextIndex = (themeIndex + 1) % themes.length;
-    const nextTheme = themes[nextIndex];
-    config.update((config) => (config.theme = nextTheme));
-  }
-
-  // stop all responses
-  const couldStop = ChatControllerPool.hasPending();
-  const stopAll = () => ChatControllerPool.stopAll();
-
-  // switch model
-  const currentModel = chatStore.currentSession().mask.modelConfig.model;
-  const allModels = useAllModels();
-  const models = useMemo(
-    () => allModels.filter((m) => m.available),
-    [allModels],
-  );
-  const [showModelSelector, setShowModelSelector] = useState(false);
-
-  useEffect(() => {
-    // if current model is not available
-    // switch to first available model
-    const isUnavaliableModel = !models.some((m) => m.name === currentModel);
-    if (isUnavaliableModel && models.length > 0) {
-      const nextModel = models[0].name as ModelType;
-      chatStore.updateCurrentSession(
-        (session) => (session.mask.modelConfig.model = nextModel),
-      );
-      showToast(nextModel);
-    }
-  }, [chatStore, currentModel, models]);
-
-  return (
-    <div className={styles["chat-input-actions"]}>
-      {couldStop && (
-        <ChatAction
-          onClick={stopAll}
-          text={Locale.Chat.InputActions.Stop}
-          icon={<StopIcon />}
-        />
-      )}
-      {!props.hitBottom && (
-        <ChatAction
-          onClick={props.scrollToBottom}
-          text={Locale.Chat.InputActions.ToBottom}
-          icon={<BottomIcon />}
-        />
-      )}
-      {props.hitBottom && (
-        <ChatAction
-          onClick={props.showPromptModal}
-          text={Locale.Chat.InputActions.Settings}
-          icon={<SettingsIcon />}
-        />
-      )}
-
-      <ChatAction
-        onClick={nextTheme}
-        text={Locale.Chat.InputActions.Theme[theme]}
-        icon={
-          <>
-            {theme === Theme.Auto ? (
-              <AutoIcon />
-            ) : theme === Theme.Light ? (
-              <LightIcon />
-            ) : theme === Theme.Dark ? (
-              <DarkIcon />
-            ) : null}
-          </>
-        }
-      />
-
-      <ChatAction
-        onClick={props.showPromptHints}
-        text={Locale.Chat.InputActions.Prompt}
-        icon={<PromptIcon />}
-      />
-
-      <ChatAction
-        onClick={() => {
-          navigate(Path.Masks);
-        }}
-        text={Locale.Chat.InputActions.Masks}
-        icon={<MaskIcon />}
-      />
-
-      <ChatAction
-        text={Locale.Chat.InputActions.Clear}
-        icon={<BreakIcon />}
-        onClick={() => {
-          chatStore.updateCurrentSession((session) => {
-            if (session.clearContextIndex === session.messages.length) {
-              session.clearContextIndex = undefined;
-            } else {
-              session.clearContextIndex = session.messages.length;
-              session.memoryPrompt = ""; // will clear memory
-            }
-          });
-        }}
-      />
-
-      <ChatAction
-        onClick={() => setShowModelSelector(true)}
-        text={currentModel}
-        icon={<RobotIcon />}
-      />
-
-      {showModelSelector && (
-        <Selector
-          defaultSelectedValue={currentModel}
-          items={models.map((m) => ({
-            title: m.displayName,
-            value: m.name,
-          }))}
-          onClose={() => setShowModelSelector(false)}
-          onSelection={(s) => {
-            if (s.length === 0) return;
-            chatStore.updateCurrentSession((session) => {
-              session.mask.modelConfig.model = s[0] as ModelType;
-              session.mask.syncGlobalConfig = false;
-            });
-            showToast(s[0]);
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
-export function EditMessageModal(props: { onClose: () => void }) {
-  const chatStore = useChatStore();
-  const session = chatStore.currentSession();
-  const [messages, setMessages] = useState(session.messages.slice());
-
-  return (
-    <div className="modal-mask">
-      <Modal
-        title={Locale.Chat.EditMessage.Title}
-        onClose={props.onClose}
-        actions={[
-          <IconButton
-            text={Locale.UI.Cancel}
-            icon={<CancelIcon />}
-            key="cancel"
-            onClick={() => {
-              props.onClose();
-            }}
-          />,
-          <IconButton
-            type="primary"
-            text={Locale.UI.Confirm}
-            icon={<ConfirmIcon />}
-            key="ok"
-            onClick={() => {
-              chatStore.updateCurrentSession(
-                (session) => (session.messages = messages),
-              );
-              props.onClose();
-            }}
-          />,
-        ]}
-      >
-        <List>
-          <ListItem
-            title={Locale.Chat.EditMessage.Topic.Title}
-            subTitle={Locale.Chat.EditMessage.Topic.SubTitle}
-          >
-            <input
-              type="text"
-              value={session.topic}
-              onInput={(e) =>
-                chatStore.updateCurrentSession(
-                  (session) => (session.topic = e.currentTarget.value),
-                )
-              }
-            ></input>
-          </ListItem>
-        </List>
-        <ContextPrompts
-          context={messages}
-          updateContext={(updater) => {
-            const newMessages = messages.slice();
-            updater(newMessages);
-            setMessages(newMessages);
-          }}
-        />
-      </Modal>
-    </div>
-  );
-}
-
 function _Chat() {
   type RenderMessage = ChatMessage & { preview?: boolean };
 
@@ -623,6 +336,10 @@ function _Chat() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isShowKeyboard, setIsShowKeyboard] = useState(true);
+  const [isEnabledKeyboard, setIsEnabledKeyboard] = useState(true);
+  const [isShowChatGender, setIsShowChatGender] = useState(false);
+  const [isShowChatUser, setIsShowChatUser] = useState(false);
   const { submitKey, shouldSubmit } = useSubmitHandler();
   const { scrollRef, setAutoScroll, scrollDomToBottom } = useScrollToBottom();
   const [hitBottom, setHitBottom] = useState(true);
@@ -697,13 +414,13 @@ function _Chat() {
 
   const doSubmit = (userInput: string) => {
     if (userInput.trim() === "") return;
-    const matchCommand = chatCommands.match(userInput);
-    if (matchCommand.matched) {
-      setUserInput("");
-      setPromptHints([]);
-      matchCommand.invoke();
-      return;
-    }
+    // const matchCommand = chatCommands.match(userInput);
+    // if (matchCommand.matched) {
+    //   setUserInput("");
+    //   setPromptHints([]);
+    //   matchCommand.invoke();
+    //   return;
+    // }
     setIsLoading(true);
     chatStore.onUserInput(userInput).then(() => setIsLoading(false));
     localStorage.setItem(LAST_INPUT_KEY, userInput);
@@ -734,6 +451,421 @@ function _Chat() {
   const onUserStop = (messageId: string) => {
     ChatControllerPool.stop(session.id, messageId);
   };
+
+  const handleCheckCookie = () => {
+    if ( useUserStore.getState().hasCookieValue() ) {
+      console.log("[chat.tsx] cookieValue is not empty");
+      // for TEST
+      // handleResetUser();
+      // handleClearSessions();
+
+      enableKeyboard(false);
+
+      handleDeleteMessageBotWelcomeBack();
+      handleDeleteMessageBotLongTime();
+
+      if ( isUnder20Turn() && isLastMessageToday() ) {
+        // 20턴 이하, 당일
+        console.log("[chat.tsx] isUnder20Turn() && isLastMessageToday()");
+        sendMessageWelcomeBack(getUserName());
+        enableKeyboard(true);
+      } else if ( isUnder20Turn() && !isLastMessageToday() ) {
+        // 20턴 이하, 다음날
+        console.log("[chat.tsx] isUnder20Turn() && !isLastMessageToday()");
+        // TODO: '오늘' 컴포넌트 출력
+        sendMessageWelcomeLongTime(getUserName());
+        enableKeyboard(true);
+      } else if ( isOver20Turn() ) {
+        // 20턴 넘어갔다면
+        console.log("[chat.tsx] isOver20Turn()");
+        // TODO: '오늘' 컴포넌트 출력
+        sendMessageWelcomeLongTime(getUserName());
+        handleStartConversation();
+        enableKeyboard(true);
+      }
+      setTimeout(() => {
+        scrollToBottom();
+      }, 500);
+    } else {
+      // 쿠키 정보 없음
+      console.log("[chat.tsx] cookieValue is empty");
+      enableKeyboard(false);
+      visibleKeyboard(false);
+      handleClearSessions();
+      handleSendMessageHello();
+      sendMessageAskGender();
+      visibleChatGender(true);
+    }
+  };
+
+  const handleCheckTurn = () => {
+    console.log("[chat.tsx] handleCheckTurn session.messages.length: ", session.messages.length);
+    console.log("[chat.tsx] handleCheckTurn getUserMessageCount: ", getUserMessageCount());
+
+    if ( isOver20Turn() ) {
+      console.log("[chat.tsx] isOver20Turn");
+      enableKeyboard(false);
+      sendMessageEmptyCount();
+      sendMessageSmartStoreLink();
+      handleSmartStoreLinkProvided();
+      sendMessageSeeYouAgain();
+      handleEndConversation();
+    }
+      
+  };
+
+  const handleResetUser = () => {
+    console.log("[chat.tsx] handleResetUser");
+    useUserStore.getState().resetUser();
+  }
+
+  const handleDeleteMessage = (message: string) => {
+    console.log("[chat.tsx] handleDeleteMessage message: ", message);
+
+    const filteredMessages = session.messages.filter(
+      (m) => m.content === message,
+    );
+
+    filteredMessages.forEach((m) => {
+      console.log("[chat.tsx] handleDeleteMessage m: ", m);
+      deleteMessage(m.id);
+    });
+  }
+
+  const handleDeleteMessageBotWelcomeBack = () => {
+    console.log("[chat.tsx] handleDeleteMessageBotWelcomeBack");
+    const msg = Locale.Store.BotWelcomeBack(getUserName());
+    handleDeleteMessage(msg);
+  }
+
+  const handleDeleteMessageBotLongTime = () => {
+    console.log("[chat.tsx] handleDeleteMessageBotLongTime");
+    const msg = Locale.Store.BotWelcomeLongTime(getUserName());
+    handleDeleteMessage(msg);
+  }
+
+  const handleClearSessions = () => {
+    console.log("[chat.tsx] handleClearSessions");
+    chatStore.clearSessions();
+  }
+
+  const handleSendMessageHello = () => {
+    sendMessageHello();
+  }
+
+  const handleRegisterUser = () => {
+    if ( useUserStore.getState().hasCookieValue() ) {
+      console.log("[chat.tsx] registerUser is not empty cookie");
+    } else {
+      console.log("[chat.tsx] registerUser is empty cookie");
+
+      const userName = getUserName()
+      const gender = useUserStore.getState().gender
+
+      useUserStore.getState().registerUser(userName, gender, (error, userId, cookieValue) => { 
+        if (error) {
+          console.log("[chat.tsx] registerUser error: ", error);
+        } else {
+          console.log("[chat.tsx] registerUser success userId: ", userId + " cookieValue: " + cookieValue);
+          handleStartConversation();
+        }
+      });
+    }
+  }
+
+  const handleStartConversation = () => {
+    console.log("[chat.tsx] startConversation-1");
+    if ( useUserStore.getState().hasCookieValue() ) {
+      console.log("[chat.tsx] startConversation-2");
+      useUserStore.getState().startConversation((error, conversationId, greeting, startTime) => {
+        if (error) {
+          console.log("[chat.tsx] startConversation error: ", error);
+        } else {
+          console.log("[chat.tsx] startConversation success conversationId: ", conversationId + " greeting: " + greeting + " startTime: " + startTime);
+          visibleKeyboard(true);
+        }
+      }
+    )}
+  }
+
+  const handleSmartStoreLinkProvided = () => {
+    console.log("[chat.tsx] handleSmartStoreLinkProvided");
+    // TODO: 링크 제공 기록 API 호출
+    // useUserStore.getState().recordSmartStoreLink();
+  }
+
+  const handleLinkClicked = () => {
+    console.log("[chat.tsx] handleLinkClicked");
+    // TODO: 클릭 이벤트 API 호출
+    // TODO: 콜백 함수에서 handleStartConversation() 호출
+  }
+
+  const handleEndConversation = () => {
+    // TODO: 대화 종료 API 호출
+  }
+
+  const handleButtonClickGender = (gender: string) => {
+    useUserStore.getState().setGender(gender);
+    console.log("[chat.tsx] handleButtonClickGender gender: ", gender);
+    console.log("[chat.tsx] handleButtonClickGender useUserStore.getState().gender: ", useUserStore.getState().gender);
+    visibleChatGender(false);
+    sendMessageSelectGender(gender);
+    sendMessageAskName();
+    visibleChatUser(true);
+  }
+
+  const handleButtonClickUserName = (userName: string) => {
+    useUserStore.getState().setUserName(userName);
+    console.log("[chat.tsx] handleButtonClickUserName userName: ", userName);
+    console.log("[chat.tsx] handleButtonClickUserName getUserName(): ", getUserName());
+    visibleChatUser(false);
+    sendMessageSelectUserName(userName);
+    sendMessageWhatKindTbk(userName);
+    handleRegisterUser();
+  }
+
+  const handleLinkClick = (event: React.MouseEvent<HTMLAnchorElement>, url: string) => {
+    console.log("[chat.tsx] handleLinkClick url: ", url);
+
+    event.preventDefault();
+    const win = window.open(url, '_blank');
+    win?.focus();
+
+    // TODO: 링크 종류 구분
+    // 1. 20턴 이후 프론트에서 제공하는 스마트 스토어 링크
+    // 2. LLM에서 제공하는 스마트 스토어 링크
+    // 3. LLM에서 제공하는 추천 가게 링크
+    handleLinkClicked();
+  }
+
+  const getPlaceholder = () => {
+    return isEnabledKeyboard ? Locale.Chat.InputEnabled : Locale.Chat.InputDisabled;
+  };
+
+  const getUserName = () => {
+    return useUserStore.getState().userName
+  }
+
+  const getUserMessageCount = () => {
+    // console.log("[chat.tsx] getUserMessageCount session.messages: ", session.messages);
+    const userMessageCount = session.messages.filter(
+      (m) => m.role === "user" && m.conversationId === useUserStore.getState().conversationId,
+    ).length;
+    return userMessageCount;
+  }
+
+  const isUnder20Turn = () => {
+    const userMessageCount = getUserMessageCount();
+    const isUnder20Turn = userMessageCount < MAX_MESSAGE_COUNT;
+
+    console.log("[chat.tsx] isUnder20Turn userMessageCount: ", userMessageCount);
+    console.log("[chat.tsx] isUnder20Turn isUnder20Turn: ", isUnder20Turn);
+
+    return isUnder20Turn;
+  }
+
+  const isOver20Turn = () => {
+    const userMessageCount = getUserMessageCount();
+    const isOver20Turn = userMessageCount >= MAX_MESSAGE_COUNT;
+
+    console.log("[chat.tsx] isOver20Turn userMessageCount: ", userMessageCount);
+    console.log("[chat.tsx] isOver20Turn isOver20Turn: ", isOver20Turn);
+
+    return isOver20Turn;
+  }
+
+  const getLastMessage = () => {
+    const lastMessage = session.messages.slice(-1)[0];
+    return lastMessage;
+  }
+
+  const parseDate = (str: string) => {
+    // Example input: "2024. 1. 28. 오후 1:40:50"
+    let [year, month, day, partOfDay, time] = str.split(/[\s.]+/);
+    let [hours, minutes, seconds] = time.split(':');
+
+    // Convert hours in 12-hour format to 24-hour format
+    if (partOfDay === '오후' && hours !== '12') {
+      hours = (parseInt(hours, 10) + 12).toString();
+    } else if (partOfDay === '오전' && hours === '12') {
+      hours = '00';
+    }
+    
+    const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes}:${seconds}`;
+    return new Date(isoDate);
+  }
+
+  const isToday = (datetimeStr: string) => {
+    const parsedDate = parseDate(datetimeStr);
+    const isoDate = parsedDate.toISOString();
+    const datetime = moment(isoDate)
+    const now = moment().startOf('day')
+    const isSame = datetime.isSame(now, 'd')
+    console.log("[chat.tsx] isToday datetimeStr: ", datetimeStr)
+    console.log("[chat.tsx] isToday datetime: ", datetime)
+    console.log("[chat.tsx] isToday now: ", now)
+    console.log("[chat.tsx] isToday isSame: ", isSame)
+    return isSame
+  }
+
+  const isWithin30Minutes = (datetimeStr: string) => {
+    const parsedDate = parseDate(datetimeStr);
+    const isoDate = parsedDate.toISOString();
+    const datetime = moment(isoDate)
+    const now = moment()
+    return now.diff(datetime, 'minutes') < SESSION_LIMIT_MIN
+  }
+
+  const isSameDate = (prevDate: string, nextDate: string) => {
+    const prev = new Date(prevDate)
+    const next = new Date(nextDate)
+
+    console.log(`isSameDate prev: ${prev}, next: ${next}`)
+
+    return 
+    prev.getFullYear() === next.getFullYear() 
+    && prev.getMonth() === next.getMonth() 
+    && prev.getDate() === next.getDate()
+  }
+
+  const isLastMessageToday = () => {
+    const lastMessage = getLastMessage();
+    return isToday(lastMessage.date.toLocaleString());
+  }
+
+  const getSubTitleForUserMessageCount = () => {
+    const userMessageCount = getUserMessageCount();
+    const remainCount = MAX_MESSAGE_COUNT-userMessageCount
+    const subTitle = Locale.Chat.SubTitle(remainCount);
+    return subTitle;
+  }
+
+  const sendUserMessage = (role: string, content: string) => {
+    // context.push(message);
+    chatStore.onSendUserMessage(role, content);
+    console.log("[chat.tsx] sendUserMessage session.messages.length: " + session.messages.length);
+  }
+
+  const sendChatbotMessage = (role: string, content: string) => {
+    // context.push(message);
+    chatStore.onSendChatbotMessage(role, content);
+    console.log("[chat.tsx] sendChatbotMessage session.messages.length: " + session.messages.length);
+  }
+
+  const sendMessageHello = () => {
+    const role = "assistant"
+    const content = Locale.Store.BotHello
+
+    console.log("[chat.tsx] sendMessageHello: ", role, content);
+
+    sendChatbotMessage(role, content);
+  }
+
+  const sendMessageAskGender = () => {
+    const role = "assistant"
+    const content = Locale.Store.BotAskGender
+
+    console.log("[chat.tsx] sendMessageAskGender: ", role, content);
+
+    sendChatbotMessage(role, content);
+  }
+
+  const sendMessageSelectGender = (gender: string) => {
+    const role = "user-settings"
+    const content = gender
+
+    console.log("[chat.tsx] sendMessageSelectGender: ", role, content);
+
+    sendUserMessage(role, content);
+  }
+
+  const sendMessageAskName = () => {
+    const role = "assistant"
+    const content = Locale.Store.BotAskName
+
+    console.log("[chat.tsx] sendMessageAskName: ", role, content);
+
+    sendChatbotMessage(role, content);
+  }
+
+  const sendMessageSelectUserName = (userName: string) => {
+    const role = "user-settings"
+    const content = userName
+
+    console.log("[chat.tsx] sendMessageSelectUserName: ", role, content);
+
+    sendUserMessage(role, content);
+  }
+
+  const sendMessageWhatKindTbk = (userName: string) => {
+    const role = "assistant"
+    const content = Locale.Store.BotWhatKindTbk(userName)
+
+    console.log("[chat.tsx] sendMessageWhatKindTbk: ", role, content);
+
+    sendChatbotMessage(role, content);
+  }
+
+  const sendMessageEmptyCount = (userName: string) => {
+    const role = "assistant"
+    const content = Locale.Store.BotEmptyCount(userName)
+
+    console.log("[chat.tsx] sendMessageEmptyCount: ", role, content);
+
+    sendChatbotMessage(role, content);
+  }
+
+  const sendMessageSmartStoreLink = () => {
+    const role = "assistant"
+    const content = Locale.Store.BotSmartStoreLink
+
+    console.log("[chat.tsx] sendMessageSmartStoreLink: ", role, content);
+
+    sendChatbotMessage(role, content);
+  }
+
+  const sendMessageSeeYouAgain = () => {
+    const role = "assistant"
+    const content = Locale.Store.BotSeeYouAgain
+
+    console.log("[chat.tsx] sendMessageSeeYouAgain: ", role, content);
+
+    sendChatbotMessage(role, content);
+  }
+
+  const sendMessageWelcomeBack = (userName: string) => {
+    const role = "assistant"
+    const content = Locale.Store.BotWelcomeBack(userName)
+
+    console.log("[chat.tsx] sendMessageWelcomeBack: ", role, content);
+
+    sendChatbotMessage(role, content);
+  }
+
+  const sendMessageWelcomeLongTime = (userName: string) => {
+    const role = "assistant"
+    const content = Locale.Store.BotWelcomeLongTime(userName)
+
+    console.log("[chat.tsx] sendMessageWelcomeLongTime: ", role, content);
+
+    sendChatbotMessage(role, content);
+  }
+
+  const visibleKeyboard = (isVisible: boolean) => {
+    setIsShowKeyboard(isVisible);
+  }
+
+  const enableKeyboard = (isEnabled: boolean) => {
+    setIsEnabledKeyboard(isEnabled);
+  }
+
+  const visibleChatUser = (isVisible: boolean) => {
+    setIsShowChatUser(isVisible);
+  }
+
+  const visibleChatGender = (isVisible: boolean) => {
+    setIsShowChatGender(isVisible);
+  }
 
   useEffect(() => {
     chatStore.updateCurrentSession((session) => {
@@ -875,16 +1007,13 @@ function _Chat() {
   }, [session.mask.context, session.mask.hideContext]);
   const accessStore = useAccessStore();
 
-  if (
-    context.length === 0 &&
-    session.messages.at(0)?.content !== BOT_HELLO.content
-  ) {
-    const copiedHello = Object.assign({}, BOT_HELLO);
-    if (!accessStore.isAuthorized()) {
-      copiedHello.content = Locale.Error.Unauthorized;
-    }
-    context.push(copiedHello);
-  }
+  useEffect(() => {
+    handleCheckCookie();
+  }, []);
+
+  useEffect(() => {
+    handleCheckTurn();
+}, [session.messages.length]);
 
   // preview messages
   const renderMessages = useMemo(() => {
@@ -903,19 +1032,20 @@ function _Chat() {
             ]
           : [],
       )
-      .concat(
-        userInput.length > 0 && config.sendPreviewBubble
-          ? [
-              {
-                ...createMessage({
-                  role: "user",
-                  content: userInput,
-                }),
-                preview: true,
-              },
-            ]
-          : [],
-      );
+      // 사용자 입력 메시지 채팅 바디에서 미리보기
+      // .concat(
+      //   userInput.length > 0 && config.sendPreviewBubble
+      //     ? [
+      //         {
+      //           ...createMessage({
+      //             role: "user",
+      //             content: userInput,
+      //           }),
+      //           preview: true,
+      //         },
+      //       ]
+      //     : [],
+      // );
   }, [
     config.sendPreviewBubble,
     context,
@@ -995,7 +1125,7 @@ function _Chat() {
         }
       });
     },
-    settings: (text) => {
+    getSubTitleForUserMessageCount: (text) => {
       if (accessStore.disableFastLink) return;
 
       try {
@@ -1004,11 +1134,11 @@ function _Chat() {
           url?: string;
         };
 
-        console.log("[Command] got settings from url: ", payload);
+        console.log("[Command] got getSubTitleForUserMessageCount from url: ", payload);
 
         if (payload.key || payload.url) {
           showConfirm(
-            Locale.URLCommand.Settings +
+            Locale.URLCommand.getSubTitleForUserMessageCount +
               `\n${JSON.stringify(payload, null, 4)}`,
           ).then((res) => {
             if (!res) return;
@@ -1023,7 +1153,7 @@ function _Chat() {
           });
         }
       } catch {
-        console.error("[Command] failed to get settings from url: ", text);
+        console.error("[Command] failed to get getSubTitleForUserMessageCount from url: ", text);
       }
     },
   });
@@ -1069,10 +1199,11 @@ function _Chat() {
             className={`window-header-main-title ${styles["chat-body-main-title"]}`}
             onClickCapture={() => setIsEditingMessage(true)}
           >
-            {!session.topic ? DEFAULT_TOPIC : session.topic}
+            {/* {!session.topic ? DEFAULT_TOPIC : session.topic} */}
+            {DEFAULT_TOPIC}
           </div>
           <div className="window-header-sub-title">
-            {Locale.Chat.SubTitle(session.messages.length)}
+            {getSubTitleForUserMessageCount()}
           </div>
         </div>
         <div className="window-actions">
@@ -1109,14 +1240,9 @@ function _Chat() {
             </div>
           )}
         </div>
-
-        <PromptToast
-          showToast={!hitBottom}
-          showModal={showPromptModal}
-          setShowModal={setShowPromptModal}
-        />
       </div>
 
+      {/* chat body */}
       <div
         className={styles["chat-body"]}
         ref={scrollRef}
@@ -1128,7 +1254,7 @@ function _Chat() {
         }}
       >
         {messages.map((message, i) => {
-          const isUser = message.role === "user";
+          const isUser = message.role === "user" || message.role === "user-settings";
           const isContext = i < context.length;
           const showActions =
             i > 0 &&
@@ -1140,6 +1266,7 @@ function _Chat() {
 
           return (
             <Fragment key={message.id}>
+              
               <div
                 className={
                   isUser ? styles["chat-message-user"] : styles["chat-message"]
@@ -1147,31 +1274,14 @@ function _Chat() {
               >
                 <div className={styles["chat-message-container"]}>
                   <div className={styles["chat-message-header"]}>
+                    {/* 아바타(캐릭터) 아이콘 */}
                     <div className={styles["chat-message-avatar"]}>
-                      <div className={styles["chat-message-edit"]}>
-                        <IconButton
-                          icon={<EditIcon />}
-                          onClick={async () => {
-                            const newMessage = await showPrompt(
-                              Locale.Chat.Actions.Edit,
-                              message.content,
-                              10,
-                            );
-                            chatStore.updateCurrentSession((session) => {
-                              const m = session.mask.context
-                                .concat(session.messages)
-                                .find((m) => m.id === message.id);
-                              if (m) {
-                                m.content = newMessage;
-                              }
-                            });
-                          }}
-                        ></IconButton>
-                      </div>
+                      <> {/* 말풍선 유저 아이콘 */} </>
                       {isUser ? (
-                        <Avatar avatar={config.avatar} />
+                        <></> /*<Avatar avatar={config.avatar} />*/
                       ) : (
                         <>
+                          {/* 말풍선 챗봇 아이콘 */}
                           {["system"].includes(message.role) ? (
                             <Avatar avatar="2699-fe0f" />
                           ) : (
@@ -1185,51 +1295,16 @@ function _Chat() {
                         </>
                       )}
                     </div>
-
-                    {showActions && (
-                      <div className={styles["chat-message-actions"]}>
-                        <div className={styles["chat-input-actions"]}>
-                          {message.streaming ? (
-                            <ChatAction
-                              text={Locale.Chat.Actions.Stop}
-                              icon={<StopIcon />}
-                              onClick={() => onUserStop(message.id ?? i)}
-                            />
-                          ) : (
-                            <>
-                              <ChatAction
-                                text={Locale.Chat.Actions.Retry}
-                                icon={<ResetIcon />}
-                                onClick={() => onResend(message)}
-                              />
-
-                              <ChatAction
-                                text={Locale.Chat.Actions.Delete}
-                                icon={<DeleteIcon />}
-                                onClick={() => onDelete(message.id ?? i)}
-                              />
-
-                              <ChatAction
-                                text={Locale.Chat.Actions.Pin}
-                                icon={<PinIcon />}
-                                onClick={() => onPinMessage(message)}
-                              />
-                              <ChatAction
-                                text={Locale.Chat.Actions.Copy}
-                                icon={<CopyIcon />}
-                                onClick={() => copyToClipboard(message.content)}
-                              />
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </div>
-                  {showTyping && (
+
+                  {/* 입력중... 텍스트 */}
+                  {/* {showTyping && (
                     <div className={styles["chat-message-status"]}>
                       {Locale.Chat.Typing}
                     </div>
-                  )}
+                  )} */}
+
+                  {/* 메시지 말풍선 */}
                   <div className={styles["chat-message-item"]}>
                     <Markdown
                       content={message.content}
@@ -1243,16 +1318,16 @@ function _Chat() {
                         if (!isMobileScreen) return;
                         setUserInput(message.content);
                       }}
+                      onLinkClick={handleLinkClick}
                       fontSize={fontSize}
                       parentRef={scrollRef}
                       defaultShow={i >= messages.length - 6}
                     />
                   </div>
 
+                  {/* 메시지 말풍선 아래 날짜 */}
                   <div className={styles["chat-message-action-date"]}>
-                    {isContext
-                      ? Locale.Chat.IsContext
-                      : message.date.toLocaleString()}
+                      {message.date.toLocaleString()}
                   </div>
                 </div>
               </div>
@@ -1260,32 +1335,19 @@ function _Chat() {
             </Fragment>
           );
         })}
+
+        {isShowChatUser && ( <ChatUser onButtonClick={handleButtonClickUserName} />)}
+        {isShowChatGender && ( <ChatGender onButtonClick={handleButtonClickGender} />)}
       </div>
 
-      <div className={styles["chat-input-panel"]}>
-        <PromptHints prompts={promptHints} onPromptSelect={onPromptSelect} />
-
-        <ChatActions
-          showPromptModal={() => setShowPromptModal(true)}
-          scrollToBottom={scrollToBottom}
-          hitBottom={hitBottom}
-          showPromptHints={() => {
-            // Click again to close
-            if (promptHints.length > 0) {
-              setPromptHints([]);
-              return;
-            }
-
-            inputRef.current?.focus();
-            setUserInput("/");
-            onSearch("");
-          }}
-        />
+      {/* 입력창 */}
+      {isShowKeyboard && ( 
+        <div className={styles["chat-input-panel"]}>
         <div className={styles["chat-input-panel-inner"]}>
           <textarea
             ref={inputRef}
-            className={styles["chat-input"]}
-            placeholder={Locale.Chat.Input(submitKey)}
+            className={`${styles["chat-input"]} ${!isEnabledKeyboard ? styles['disabled-input'] : ''}`}
+            placeholder={getPlaceholder()}
             onInput={(e) => onInput(e.currentTarget.value)}
             value={userInput}
             onKeyDown={onInputKeyDown}
@@ -1294,29 +1356,33 @@ function _Chat() {
             rows={inputRows}
             autoFocus={autoFocus}
             style={{
-              fontSize: config.fontSize,
+              fontSize: config.fontSize
             }}
           />
           <IconButton
             icon={<SendWhiteIcon />}
-            text={Locale.Chat.Send}
-            className={styles["chat-input-send"]}
+            // text={Locale.Chat.Send}
+            text=""
+            className={`${styles["chat-input-send"]} ${!isEnabledKeyboard ? styles['disabled-input'] : ''}`}
             type="primary"
             onClick={() => doSubmit(userInput)}
           />
         </div>
-      </div>
 
+        <div className={styles["label-chatgpt"]}>
+          <p className={styles["chatgpt"]}>
+            인공지능 답변은 ChatGPT 기반이며, 정확하지 않은 답변으로
+            <br />
+            생각되면 사실 여부를 한번 더 체크해 보세요.
+          </p>
+        </div>
+
+      </div>
+       )}
+
+      {/* 우상단 버튼 이벤트 */}
       {showExport && (
         <ExportMessageModal onClose={() => setShowExport(false)} />
-      )}
-
-      {isEditingMessage && (
-        <EditMessageModal
-          onClose={() => {
-            setIsEditingMessage(false);
-          }}
-        />
       )}
     </div>
   );

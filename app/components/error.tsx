@@ -47,12 +47,12 @@ export class ErrorBoundary extends React.Component<any, IErrorBoundaryState> {
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <a href={ISSUE_URL} className="report">
               <IconButton
-                text="Report This Error"
-                icon={<GithubIcon />}
+                text="에러가 있다면 푸딘코에게 알려주세요!"
+                icon=""
                 bordered
               />
             </a>
-            <IconButton
+            {/* <IconButton
               icon={<ResetIcon />}
               text="Clear All Data"
               onClick={async () => {
@@ -61,7 +61,7 @@ export class ErrorBoundary extends React.Component<any, IErrorBoundaryState> {
                 }
               }}
               bordered
-            />
+            /> */}
           </div>
         </div>
       );

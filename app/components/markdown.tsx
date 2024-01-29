@@ -116,7 +116,23 @@ function escapeDollarNumber(text: string) {
   return escapedText;
 }
 
-function _MarkDownContent(props: { content: string }) {
+function CustomLink({ href, children, onCustomClick, ...props }) {
+  const handleLinkClick = (e) => {
+    console.log("[markdown.tsx] handleLinkClick href: " + href)
+    console.log("[markdown.tsx] handleLinkClick children: " + children)
+    console.log("[markdown.tsx] handleLinkClick onCustomClick: " + onCustomClick)
+    console.log("[markdown.tsx] handleLinkClick props: " + props)
+    onCustomClick(e, href);
+  };
+
+  return (
+    <a href={href} onClick={handleLinkClick} {...props}>
+      {children}
+    </a>
+  );
+}
+
+function _MarkDownContent(props: { content: string, onLinkClick: any}) {
   const escapedContent = useMemo(
     () => escapeDollarNumber(props.content),
     [props.content],
@@ -138,12 +154,13 @@ function _MarkDownContent(props: { content: string }) {
       components={{
         pre: PreCode,
         p: (pProps) => <p {...pProps} dir="auto" />,
-        a: (aProps) => {
-          const href = aProps.href || "";
-          const isInternal = /^\/#/i.test(href);
-          const target = isInternal ? "_self" : aProps.target ?? "_blank";
-          return <a {...aProps} target={target} />;
-        },
+        // a: (aProps) => {
+        //   const href = aProps.href || "";
+        //   const isInternal = /^\/#/i.test(href);
+        //   const target = isInternal ? "_self" : aProps.target ?? "_blank";
+        //   return <a {...aProps} target={target} />;
+        // },
+        a: (aProps) => <CustomLink {...aProps} onCustomClick={props.onLinkClick} />
       }}
     >
       {escapedContent}
@@ -160,6 +177,7 @@ export function Markdown(
     fontSize?: number;
     parentRef?: RefObject<HTMLDivElement>;
     defaultShow?: boolean;
+    onLinkClick: any;
   } & React.DOMAttributes<HTMLDivElement>,
 ) {
   const mdRef = useRef<HTMLDivElement>(null);
@@ -174,11 +192,12 @@ export function Markdown(
       onContextMenu={props.onContextMenu}
       onDoubleClickCapture={props.onDoubleClickCapture}
       dir="auto"
+      // onLinkClick={props.onLinkClick}
     >
       {props.loading ? (
         <LoadingIcon />
       ) : (
-        <MarkdownContent content={props.content} />
+        <MarkdownContent content={props.content} onLinkClick={props.onLinkClick} />
       )}
     </div>
   );

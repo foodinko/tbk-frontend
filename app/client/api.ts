@@ -7,8 +7,9 @@ import {
 } from "../constant";
 import { ChatMessage, ModelType, useAccessStore, useChatStore } from "../store";
 import { ChatGPTApi } from "./platforms/openai";
+import { FoodinkoApi } from "./platforms/foodinko";
 import { GeminiProApi } from "./platforms/google";
-export const ROLES = ["system", "user", "assistant"] as const;
+export const ROLES = ["system", "user", "user-settings", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
 
 export const Models = ["gpt-3.5-turbo", "gpt-4"] as const;
@@ -86,7 +87,10 @@ export class ClientApi {
   public llm: LLMApi;
 
   constructor(provider: ModelProvider = ModelProvider.GPT) {
-    if (provider === ModelProvider.GeminiPro) {
+    if (provider === ModelProvider.FoodinkoTbk) {
+      this.llm = new FoodinkoApi();
+      return;
+    } else if (provider === ModelProvider.GeminiPro) {
       this.llm = new GeminiProApi();
       return;
     }
@@ -109,7 +113,7 @@ export class ClientApi {
         {
           from: "human",
           value:
-            "Share from [NextChat]: https://github.com/Yidadaa/ChatGPT-Next-Web",
+            "Share from [BOKI]: https://bokki.foodinko.com",
         },
       ]);
     // 敬告二开开发者们，为了开源大模型的发展，请不要修改上述消息，此消息用于后续数据清洗使用

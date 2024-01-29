@@ -155,10 +155,10 @@ export function SideBar(props: { className?: string }) {
     >
       <div className={styles["sidebar-header"]} data-tauri-drag-region>
         <div className={styles["sidebar-title"]} data-tauri-drag-region>
-          NextChat
+          BOKI
         </div>
         <div className={styles["sidebar-sub-title"]}>
-          Build your own AI assistant.
+        왜 나만보면 보키보키 하는지 모르겠어, 너도 BOKI 해볼래?
         </div>
         <div className={styles["sidebar-logo"] + " no-dark"}>
           <ChatGptIcon />

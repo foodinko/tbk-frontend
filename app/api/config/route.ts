@@ -20,6 +20,7 @@ declare global {
 }
 
 async function handle() {
+  debugger;
   return NextResponse.json(DANGER_CONFIG);
 }
 

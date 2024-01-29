@@ -1,18 +1,25 @@
-export const OWNER = "Yidadaa";
-export const REPO = "ChatGPT-Next-Web";
+export const OWNER = "FOODINKO";
+export const REPO = "FOODINKO-REPO";
 export const REPO_URL = `https://github.com/${OWNER}/${REPO}`;
-export const ISSUE_URL = `https://github.com/${OWNER}/${REPO}/issues`;
-export const UPDATE_URL = `${REPO_URL}#keep-updated`;
-export const RELEASE_URL = `${REPO_URL}/releases`;
-export const FETCH_COMMIT_URL = `https://api.github.com/repos/${OWNER}/${REPO}/commits?per_page=1`;
-export const FETCH_TAG_URL = `https://api.github.com/repos/${OWNER}/${REPO}/tags?per_page=1`;
+export const ISSUE_URL = `https://www.foodinko.com`;
+export const UPDATE_URL = `https://www.foodinko.com`;
+export const RELEASE_URL = `https://www.foodinko.com`;
+export const FETCH_COMMIT_URL = `https://www.foodinko.com`;
+export const FETCH_TAG_URL = `https://wwww.foodinko.com`;
 export const RUNTIME_CONFIG_DOM = "danger-runtime-config";
 
-export const DEFAULT_CORS_HOST = "https://a.nextweb.fun";
+export const DEFAULT_CORS_HOST = "https://bokki.foodinko.com";
 export const DEFAULT_API_HOST = `${DEFAULT_CORS_HOST}/api/proxy`;
 export const OPENAI_BASE_URL = "https://api.openai.com";
 
 export const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/";
+
+export const FOODINKO_BASE_URL = "https://bokki.foodinko.com";
+export const FOODINKO_BASE_URL_DEV = "https://bokki-api.foodinko.com";
+export const FOODINKO_BASE_URL_DEV_LOCAL = "http://localhost:8000";
+
+export const FOODINKO_CORS_HOST = `${FOODINKO_BASE_URL_DEV_LOCAL}`;
+export const FOODINKO_API_HOST = `${FOODINKO_CORS_HOST}/api/`;
 
 export enum Path {
   Home = "/",
@@ -46,6 +53,7 @@ export enum StoreKey {
   Prompt = "prompt-store",
   Update = "chat-update",
   Sync = "sync",
+  User = "user-info",
 }
 
 export const DEFAULT_SIDEBAR_WIDTH = 300;
@@ -68,11 +76,13 @@ export enum ServiceProvider {
   OpenAI = "OpenAI",
   Azure = "Azure",
   Google = "Google",
+  Foodinko = "Foodinko",
 }
 
 export enum ModelProvider {
   GPT = "GPT",
   GeminiPro = "GeminiPro",
+  FoodinkoTbk = "FoodinkoTbk",
 }
 
 export const OpenaiPath = {
@@ -93,6 +103,10 @@ export const Google = {
   // /api/openai/v1/chat/completions
 };
 
+export const FoodinkoPath = {
+  ChatPath: "api/chat/completions",
+};
+
 export const DEFAULT_INPUT_TEMPLATE = `{{input}}`; // input / time / model / lang
 export const DEFAULT_SYSTEM_TEMPLATE = `
 You are ChatGPT, a large language model trained by OpenAI.
@@ -103,7 +117,8 @@ Latex inline: $x^2$
 Latex block: $$e=mc^2$$
 `;
 
-export const SUMMARIZE_MODEL = "gpt-3.5-turbo";
+//export const SUMMARIZE_MODEL = "gpt-3.5-turbo";
+export const SUMMARIZE_MODEL = "foodinko-tbk";
 
 export const KnowledgeCutOffDate: Record<string, string> = {
   default: "2021-09",
@@ -247,6 +262,15 @@ export const DEFAULT_MODELS = [
       providerType: "google",
     },
   },
+  {
+    name: "foodinko-tbk",
+    available: true,
+    provider: {
+      id: "tbk",
+      providerName: "Foodinko",
+      providerType: "foodinko",
+    }
+  }
 ] as const;
 
 export const CHAT_PAGE_SIZE = 15;
