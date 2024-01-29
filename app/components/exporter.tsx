@@ -254,6 +254,10 @@ export function RenderExport(props: {
 }) {
   const domRef = useRef<HTMLDivElement>(null);
 
+  const handleLinkClick = (e: React.MouseEvent, href: string) => {
+    console.log("Link clicked:", href);
+  };
+
   useEffect(() => {
     if (!domRef.current) return;
     const dom = domRef.current;
@@ -272,6 +276,7 @@ export function RenderExport(props: {
         role: role as any,
         content: role === "user" ? v.textContent ?? "" : v.innerHTML,
         date: "",
+        conversationId: props.messages[i].conversationId,
       };
     });
 
@@ -287,7 +292,7 @@ export function RenderExport(props: {
           id={`${m.role}:${i}`}
           className={EXPORT_MESSAGE_CLASS_NAME}
         >
-          <Markdown content={m.content} defaultShow />
+          <Markdown content={m.content} defaultShow onLinkClick={handleLinkClick}/>
         </div>
       ))}
     </div>
@@ -517,6 +522,10 @@ export function ImagePreviewer(props: {
     }
   };
 
+  const handleLinkClick = (e: React.MouseEvent, href: string) => {
+    console.log("Link clicked:", href);
+  };
+
   return (
     <div className={styles["image-previewer"]}>
       <PreviewActions
@@ -583,6 +592,7 @@ export function ImagePreviewer(props: {
                   content={m.content}
                   fontSize={config.fontSize}
                   defaultShow
+                  onLinkClick={handleLinkClick}
                 />
               </div>
             </div>
@@ -653,6 +663,9 @@ export function JsonPreviewer(props: {
   const download = () => {
     downloadAs(JSON.stringify(msgs), `${props.topic}.json`);
   };
+  const handleLinkClick = (e: React.MouseEvent, href: string) => {
+    console.log("Link clicked:", href);
+  };
 
   return (
     <>
@@ -663,7 +676,7 @@ export function JsonPreviewer(props: {
         messages={props.messages}
       />
       <div className="markdown-body" onClick={copy}>
-        <Markdown content={mdText} />
+        <Markdown content={mdText} defaultShow onLinkClick={handleLinkClick}/>
       </div>
     </>
   );

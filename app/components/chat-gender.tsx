@@ -1,10 +1,14 @@
 import * as React from "react";
 import styles from "./chat-gender.module.scss";
 
-export const ChatGender = ({ onButtonClick }): JSX.Element => {
-  const [selectedGender, setSelectedGender] = React.useState(null);
+interface ChatGenderProps {
+  onButtonClick: (gender: string) => void;
+}
 
-  const handleClick = (gender) => {
+export const ChatGender = ({ onButtonClick }: ChatGenderProps): JSX.Element => {
+  const [selectedGender, setSelectedGender] = React.useState("");
+
+  const handleClick = (gender: string) => {
     console.log("[ChatGender] Button clicked:", gender);
     setSelectedGender(gender);
     onButtonClick(gender);

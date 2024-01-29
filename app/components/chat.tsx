@@ -22,7 +22,7 @@ import MaxIcon from "../icons/max.svg";
 import MinIcon from "../icons/min.svg";
 import ResetIcon from "../icons/reload.svg";
 import BreakIcon from "../icons/break.svg";
-import getSubTitleForUserMessageCountIcon from "../icons/chat-getSubTitleForUserMessageCount.svg";
+// import getSubTitleForUserMessageCountIcon from "../icons/chat-getSubTitleForUserMessageCount.svg";
 import DeleteIcon from "../icons/clear.svg";
 import PinIcon from "../icons/pin.svg";
 import EditIcon from "../icons/rename.svg";
@@ -511,7 +511,7 @@ function _Chat() {
     if (isOver20Turn()) {
       console.log("[chat.tsx] isOver20Turn");
       enableKeyboard(false);
-      sendMessageEmptyCount();
+      sendMessageEmptyCount(getUserName());
       sendMessageSmartStoreLink();
       handleSmartStoreLinkProvided();
       sendMessageSeeYouAgain();
@@ -771,25 +771,25 @@ function _Chat() {
     return isToday(lastMessage.date.toLocaleString());
   };
 
-  const getSubTitleForUserMessageCount = () => {
+  const getSubTitleForUserMessageCountCustom = () => {
     const userMessageCount = getUserMessageCount();
     const remainCount = MAX_MESSAGE_COUNT - userMessageCount;
     const subTitle = Locale.Chat.SubTitle(remainCount);
     return subTitle;
   };
 
-  const sendUserMessage = (role: string, content: string) => {
+  const sendUserMessage = (content: string) => {
     // context.push(message);
-    chatStore.onSendUserMessage(role, content);
+    chatStore.onSendUserMessage(content);
     console.log(
       "[chat.tsx] sendUserMessage session.messages.length: " +
         session.messages.length,
     );
   };
 
-  const sendChatbotMessage = (role: string, content: string) => {
+  const sendChatbotMessage = (content: string) => {
     // context.push(message);
-    chatStore.onSendChatbotMessage(role, content);
+    chatStore.onSendChatbotMessage(content);
     console.log(
       "[chat.tsx] sendChatbotMessage session.messages.length: " +
         session.messages.length,
@@ -797,102 +797,91 @@ function _Chat() {
   };
 
   const sendMessageHello = () => {
-    const role = "assistant";
     const content = Locale.Store.BotHello;
 
-    console.log("[chat.tsx] sendMessageHello: ", role, content);
+    console.log("[chat.tsx] sendMessageHello: ", content);
 
-    sendChatbotMessage(role, content);
+    sendChatbotMessage(content);
   };
 
   const sendMessageAskGender = () => {
-    const role = "assistant";
     const content = Locale.Store.BotAskGender;
 
-    console.log("[chat.tsx] sendMessageAskGender: ", role, content);
+    console.log("[chat.tsx] sendMessageAskGender: ", content);
 
-    sendChatbotMessage(role, content);
+    sendChatbotMessage(content);
   };
 
   const sendMessageSelectGender = (gender: string) => {
-    const role = "user-settings";
     const content = gender;
 
-    console.log("[chat.tsx] sendMessageSelectGender: ", role, content);
+    console.log("[chat.tsx] sendMessageSelectGender: ", content);
 
-    sendUserMessage(role, content);
+    sendUserMessage(content);
   };
 
   const sendMessageAskName = () => {
-    const role = "assistant";
     const content = Locale.Store.BotAskName;
 
-    console.log("[chat.tsx] sendMessageAskName: ", role, content);
+    console.log("[chat.tsx] sendMessageAskName: ", content);
 
-    sendChatbotMessage(role, content);
+    sendChatbotMessage(content);
   };
 
   const sendMessageSelectUserName = (userName: string) => {
-    const role = "user-settings";
     const content = userName;
 
-    console.log("[chat.tsx] sendMessageSelectUserName: ", role, content);
+    console.log("[chat.tsx] sendMessageSelectUserName: ", content);
 
-    sendUserMessage(role, content);
+    sendUserMessage(content);
   };
 
   const sendMessageWhatKindTbk = (userName: string) => {
-    const role = "assistant";
     const content = Locale.Store.BotWhatKindTbk(userName);
 
-    console.log("[chat.tsx] sendMessageWhatKindTbk: ", role, content);
+    console.log("[chat.tsx] sendMessageWhatKindTbk: ", content);
 
-    sendChatbotMessage(role, content);
+    sendChatbotMessage(content);
   };
 
   const sendMessageEmptyCount = (userName: string) => {
-    const role = "assistant";
     const content = Locale.Store.BotEmptyCount(userName);
 
-    console.log("[chat.tsx] sendMessageEmptyCount: ", role, content);
+    console.log("[chat.tsx] sendMessageEmptyCount: ", content);
 
-    sendChatbotMessage(role, content);
+    sendChatbotMessage(content);
   };
 
   const sendMessageSmartStoreLink = () => {
-    const role = "assistant";
     const content = Locale.Store.BotSmartStoreLink;
 
-    console.log("[chat.tsx] sendMessageSmartStoreLink: ", role, content);
+    console.log("[chat.tsx] sendMessageSmartStoreLink: ", content);
 
-    sendChatbotMessage(role, content);
+    sendChatbotMessage(content);
   };
 
   const sendMessageSeeYouAgain = () => {
-    const role = "assistant";
     const content = Locale.Store.BotSeeYouAgain;
 
-    console.log("[chat.tsx] sendMessageSeeYouAgain: ", role, content);
+    console.log("[chat.tsx] sendMessageSeeYouAgain: ", content);
 
-    sendChatbotMessage(role, content);
+    sendChatbotMessage(content);
   };
 
   const sendMessageWelcomeBack = (userName: string) => {
-    const role = "assistant";
     const content = Locale.Store.BotWelcomeBack(userName);
 
-    console.log("[chat.tsx] sendMessageWelcomeBack: ", role, content);
+    console.log("[chat.tsx] sendMessageWelcomeBack: ", content);
 
-    sendChatbotMessage(role, content);
+    sendChatbotMessage(content);
   };
 
   const sendMessageWelcomeLongTime = (userName: string) => {
-    const role = "assistant";
     const content = Locale.Store.BotWelcomeLongTime(userName);
 
-    console.log("[chat.tsx] sendMessageWelcomeLongTime: ", role, content);
+    console.log("[chat.tsx] sendMessageWelcomeLongTime: ", content);
 
-    sendChatbotMessage(role, content);
+    sendChatbotMessage(content);
   };
 
   const visibleKeyboard = (isVisible: boolean) => {
@@ -1167,43 +1156,43 @@ function _Chat() {
         }
       });
     },
-    getSubTitleForUserMessageCount: (text) => {
-      if (accessStore.disableFastLink) return;
+    // getSubTitleForUserMessageCount: (text) => {
+    //   if (accessStore.disableFastLink) return;
 
-      try {
-        const payload = JSON.parse(text) as {
-          key?: string;
-          url?: string;
-        };
+    //   try {
+    //     const payload = JSON.parse(text) as {
+    //       key?: string;
+    //       url?: string;
+    //     };
 
-        console.log(
-          "[Command] got getSubTitleForUserMessageCount from url: ",
-          payload,
-        );
+    //     console.log(
+    //       "[Command] got getSubTitleForUserMessageCount from url: ",
+    //       payload,
+    //     );
 
-        if (payload.key || payload.url) {
-          showConfirm(
-            Locale.URLCommand.getSubTitleForUserMessageCount +
-              `\n${JSON.stringify(payload, null, 4)}`,
-          ).then((res) => {
-            if (!res) return;
-            if (payload.key) {
-              accessStore.update(
-                (access) => (access.openaiApiKey = payload.key!),
-              );
-            }
-            if (payload.url) {
-              accessStore.update((access) => (access.openaiUrl = payload.url!));
-            }
-          });
-        }
-      } catch {
-        console.error(
-          "[Command] failed to get getSubTitleForUserMessageCount from url: ",
-          text,
-        );
-      }
-    },
+    //     if (payload.key || payload.url) {
+    //       showConfirm(
+    //         Locale.URLCommand.getSubTitleForUserMessageCount +
+    //           `\n${JSON.stringify(payload, null, 4)}`,
+    //       ).then((res) => {
+    //         if (!res) return;
+    //         if (payload.key) {
+    //           accessStore.update(
+    //             (access) => (access.openaiApiKey = payload.key!),
+    //           );
+    //         }
+    //         if (payload.url) {
+    //           accessStore.update((access) => (access.openaiUrl = payload.url!));
+    //         }
+    //       });
+    //     }
+    //   } catch {
+    //     console.error(
+    //       "[Command] failed to get getSubTitleForUserMessageCount from url: ",
+    //       text,
+    //     );
+    //   }
+    // },
   });
 
   // edit / insert message modal
@@ -1251,7 +1240,7 @@ function _Chat() {
             {DEFAULT_TOPIC}
           </div>
           <div className="window-header-sub-title">
-            {getSubTitleForUserMessageCount()}
+            {getSubTitleForUserMessageCountCustom()}
           </div>
         </div>
         <div className="window-actions">

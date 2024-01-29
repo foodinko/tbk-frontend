@@ -1,10 +1,14 @@
 import * as React from "react";
 import styles from "./chat-user.module.scss";
 
-export const ChatUser = ({ onButtonClick }): JSX.Element => {
+interface ChatUserProps {
+  onButtonClick: (name: string) => void;
+}
+
+export const ChatUser = ({ onButtonClick }: ChatUserProps): JSX.Element => {
   const [inputValue, setInputValue] = React.useState("");
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: any) => {
     console.log("[ChatUser] handleInputChange: ", e.target.value);
     setInputValue(e.target.value);
   };

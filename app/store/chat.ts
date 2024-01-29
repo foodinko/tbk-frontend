@@ -12,7 +12,7 @@ import {
   StoreKey,
   SUMMARIZE_MODEL,
 } from "../constant";
-import { ClientApi, RequestMessage } from "../client/api";
+import { ClientApi, ROLES, MessageRole , RequestMessage } from "../client/api";
 import { ChatControllerPool } from "../client/controller";
 import { prettyObject } from "../utils/format";
 import { estimateTokenLength } from "../utils/token";
@@ -23,19 +23,22 @@ import { useUserStore } from "./user";
 
 export type ChatMessage = RequestMessage & {
   id: string;
+  role: string;
+  content: string;
   date: string;
   model?: ModelType;
   streaming?: boolean;
   isError?: boolean;
+  conversationId: number;
 };
 
 export function createMessage(override: Partial<ChatMessage>): ChatMessage {
   return {
     id: nanoid(),
-    date: new Date().toLocaleString(),
-    role: "",
+    role: ROLES[0],
     content: "",
-    conversationId: "",
+    date: new Date().toLocaleString(),
+    conversationId: 0,
     ...override,
   };
 }
@@ -80,28 +83,28 @@ export const BOT_ASK_NAME: ChatMessage = createMessage({
   content: Locale.Store.BotAskName,
 });
 
-export const BOT_WHAT_KIND_TBK: ChatMessage = (userName: string) => {
+export const BOT_WHAT_KIND_TBK: (userName: string) => ChatMessage = (userName: string) => {
   return createMessage({
     role: "assistant",
     content: Locale.Store.BotWhatKindTbk(userName),
   });
 };
 
-export const BOT_EMPTY_COUNT: ChatMessage = (userName: string) => {
+export const BOT_EMPTY_COUNT: (userName: string) => ChatMessage = (userName: string) => {
   return createMessage({
     role: "assistant",
     content: Locale.Store.BotEmptyCount(userName),
   });
 };
 
-export const BOT_WELCOME_BACK: ChatMessage = (userName: string) => {
+export const BOT_WELCOME_BACK: (userName: string) => ChatMessage = (userName: string) => {
   return createMessage({
     role: "assistant",
     content: Locale.Store.BotWelcomeBack(userName),
   });
 };
 
-export const BOT_WELCOME_LONG_TIME: ChatMessage = (userName: string) => {
+export const BOT_WELCOME_LONG_TIME: (userName: string) => ChatMessage = (userName: string) => {
   return createMessage({
     role: "assistant",
     content: Locale.Store.BotWelcomeLongTime(userName),
@@ -433,7 +436,7 @@ export const useChatStore = createPersistStore(
         });
       },
 
-      onSendUserMessage(role: string, content: string) {
+      onSendUserMessage(content: string) {
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
         const userContent = fillTemplateWith(content, modelConfig);
@@ -441,7 +444,7 @@ export const useChatStore = createPersistStore(
         console.log("[onSendUserMessage] userContent: ", userContent);
 
         const userMessage: ChatMessage = createMessage({
-          role: role,
+          role: "user-settings",
           content: userContent,
         });
         content;
@@ -454,7 +457,7 @@ export const useChatStore = createPersistStore(
         });
       },
 
-      onSendChatbotMessage(role: string, content: string) {
+      onSendChatbotMessage(content: string) {
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
         const userContent = fillTemplateWith(content, modelConfig);
@@ -462,7 +465,7 @@ export const useChatStore = createPersistStore(
         console.log("[onSendChatbotMessage] userContent: ", userContent);
 
         const botMessage: ChatMessage = createMessage({
-          role: role,
+          role: "assistant",
           content: userContent,
         });
 

@@ -48,7 +48,7 @@ export class ErrorBoundary extends React.Component<any, IErrorBoundaryState> {
             <a href={ISSUE_URL} className="report">
               <IconButton
                 text="에러가 있다면 푸딘코에게 알려주세요!"
-                icon=""
+                icon={<></>}
                 bordered
               />
             </a>

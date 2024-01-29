@@ -116,15 +116,24 @@ function escapeDollarNumber(text: string) {
   return escapedText;
 }
 
-function CustomLink({ href, children, onCustomClick, ...props }) {
-  const handleLinkClick = (e) => {
+interface CustomLinkProps {
+  href?: string;
+  children: React.ReactNode;
+  onCustomClick: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
+  [key: string]: any;
+}
+
+function CustomLink({ href, children, onCustomClick, ...props }: CustomLinkProps) {
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     console.log("[markdown.tsx] handleLinkClick href: " + href);
     console.log("[markdown.tsx] handleLinkClick children: " + children);
     console.log(
       "[markdown.tsx] handleLinkClick onCustomClick: " + onCustomClick,
     );
     console.log("[markdown.tsx] handleLinkClick props: " + props);
-    onCustomClick(e, href);
+    if (href !== undefined) {
+      onCustomClick(e, href);
+    }
   };
 
   return (
@@ -163,7 +172,7 @@ function _MarkDownContent(props: { content: string; onLinkClick: any }) {
         //   return <a {...aProps} target={target} />;
         // },
         a: (aProps) => (
-          <CustomLink {...aProps} onCustomClick={props.onLinkClick} />
+          <CustomLink {...aProps} href={aProps.href || "#"} onCustomClick={props.onLinkClick} />
         ),
       }}
     >
