@@ -5,7 +5,7 @@ import {
   FoodinkoPath,
   REQUEST_TIMEOUT_MS,
   ServiceProvider,
-  FOODINKO_BASE_URL_DEV_LOCAL,
+  // FOODINKO_BASE_URL_DEV_LOCAL,
 } from "@/app/constant";
 import {
   useAccessStore,
@@ -37,8 +37,8 @@ export class FoodinkoApi implements LLMApi {
   private disableListModels = true;
 
   path(path: string): string {
-    // TODO: baseUrl 개발 환경 구분
-    const baseUrl = FOODINKO_BASE_URL_DEV_LOCAL;
+    // const baseUrl = FOODINKO_BASE_URL_DEV_LOCAL;
+    const baseUrl = process.env.MMW_TTBOKI_BACKEND_HOST;
 
     const completePath = [baseUrl, path].join("/");
 
