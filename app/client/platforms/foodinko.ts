@@ -72,7 +72,7 @@ export class FoodinkoApi implements LLMApi {
     console.log("[FoodinkoApi] Request foodinko payload: ", requestPayload);
 
     let errored = false;
-    const error = (e) => {
+    const error = (e: any) => {
       errored = true;
       options.onError?.(e);
     };
