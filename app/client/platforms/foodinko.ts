@@ -38,7 +38,8 @@ export class FoodinkoApi implements LLMApi {
 
   path(path: string): string {
     // const baseUrl = FOODINKO_BASE_URL_DEV_LOCAL;
-    const baseUrl = process.env.MMW_TTBOKI_BACKEND_HOST;
+    // const baseUrl = process.env.MMW_TTBOKI_BACKEND_HOST;
+    const baseUrl = "http://3.26.233.124";
 
     const completePath = [baseUrl, path].join("/");
 
