@@ -508,14 +508,14 @@ function _Chat() {
       getUserMessageCount(),
     );
 
-    if (isOver20Turn()) {
+    if (isOver20Turn() && useUserStore.getState().isConversationStateInProgress() ) {
       console.log("[chat.tsx] isOver20Turn");
       enableKeyboard(false);
       sendMessageEmptyCount(getUserName());
       sendMessageSmartStoreLink();
       handleSmartStoreLinkProvided();
       sendMessageSeeYouAgain();
-      handleEndConversation();
+      handleFinishConversation();
     }
   };
 
@@ -602,6 +602,8 @@ function _Chat() {
                 startTime,
             );
             visibleKeyboard(true);
+            enableKeyboard(true);
+            useUserStore.getState().setConversationStateInProgress();
           }
         });
     }
@@ -617,9 +619,15 @@ function _Chat() {
     console.log("[chat.tsx] handleLinkClicked");
     // TODO: 클릭 이벤트 API 호출
     // TODO: 콜백 함수에서 handleStartConversation() 호출
+    if (!useUserStore.getState().isConversationStateInProgress()) { 
+      handleStartConversation();
+      sendMessageWelcomeBack(getUserName());
+      enableKeyboard(true);
+    }
   };
 
-  const handleEndConversation = () => {
+  const handleFinishConversation = () => {
+    useUserStore.getState().setConversationStateFinished();
     // TODO: 대화 종료 API 호출
   };
 
@@ -1221,12 +1229,12 @@ function _Chat() {
         {isMobileScreen && (
           <div className="window-actions">
             <div className={"window-action-button"}>
-              <IconButton
+              {/* <IconButton
                 icon={<ReturnIcon />}
                 bordered
                 title={Locale.Chat.Actions.ChatList}
                 onClick={() => navigate(Path.Home)}
-              />
+              /> */}
             </div>
           </div>
         )}
@@ -1244,7 +1252,7 @@ function _Chat() {
           </div>
         </div>
         <div className="window-actions">
-          {!isMobileScreen && (
+          {/* {!isMobileScreen && (
             <div className="window-action-button">
               <IconButton
                 icon={<RenameIcon />}
@@ -1252,18 +1260,18 @@ function _Chat() {
                 onClick={() => setIsEditingMessage(true)}
               />
             </div>
-          )}
-          <div className="window-action-button">
+          )} */}
+          {/* <div className="window-action-button">
             <IconButton
               icon={<ExportIcon />}
               bordered
-              title={Locale.Chat.Actions.Export}
+              // title={Locale.Chat.Actions.Export}
               onClick={() => {
-                setShowExport(true);
+                // setShowExport(true);
               }}
             />
-          </div>
-          {showMaxIcon && (
+          </div> */}
+          {/* {showMaxIcon && (
             <div className="window-action-button">
               <IconButton
                 icon={config.tightBorder ? <MinIcon /> : <MaxIcon />}
@@ -1275,7 +1283,7 @@ function _Chat() {
                 }}
               />
             </div>
-          )}
+          )} */}
         </div>
       </div>
 
@@ -1409,7 +1417,7 @@ function _Chat() {
               className={`${styles["chat-input-send"]} ${
                 !isEnabledKeyboard ? styles["disabled-input"] : ""
               }`}
-              type="primary"
+              type={null}
               onClick={() => doSubmit(userInput)}
             />
           </div>
@@ -1425,9 +1433,9 @@ function _Chat() {
       )}
 
       {/* 우상단 버튼 이벤트 */}
-      {showExport && (
+      {/* {showExport && (
         <ExportMessageModal onClose={() => setShowExport(false)} />
-      )}
+      )} */}
     </div>
   );
 }

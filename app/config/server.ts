@@ -57,6 +57,8 @@ export const getServerSideConfig = () => {
     );
   }
 
+  // console.log("[Server Config] process.env: ", JSON.stringify(process.env));
+
   const disableGPT4 = !!process.env.DISABLE_GPT4;
   let customModels = process.env.CUSTOM_MODELS ?? "";
 

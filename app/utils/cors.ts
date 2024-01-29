@@ -26,16 +26,30 @@ export function corsFetch(
     proxyUrl?: string;
   },
 ) {
-  if (!url.startsWith("http")) {
-    throw Error("[CORS Fetch] url must starts with http/https");
-  }
+
+  console.log("[cors.ts] corsFetch url: ", url);
+  console.log("[cors.ts] corsFetch options: ", options);
+
+  let baseUrl = "http://3.26.233.124";
+  let path = `${url}`.replaceAll("/api/foodinko", "/api");
+  url = `${baseUrl}${path}`;
+
+  console.log("[cors.ts] corsFetch url: ", url);
+
+  // if (!url.startsWith("http")) {
+  //   throw Error("[cors.ts Fetch] url must starts with http/https");
+  // }
 
   let proxyUrl = options.proxyUrl ?? corsPath(ApiPath.Cors);
   if (!proxyUrl.endsWith("/")) {
     proxyUrl += "/";
   }
 
+  console.log("[cors.ts] corsFetch proxyUrl: ", proxyUrl);
+
   url = url.replace("://", "/");
+
+  console.log("[cors.ts] corsFetch url: ", url);
 
   const corsOptions = {
     ...options,
@@ -48,8 +62,11 @@ export function corsFetch(
       : options.headers,
   };
 
+  console.log("[cors.ts] corsFetch corsOptions: ", corsOptions);
+
   const corsUrl = proxyUrl + url;
-  console.info("[CORS] target = ", corsUrl);
+
+  console.log("[cors.ts] target = ", corsUrl);
 
   return fetch(corsUrl, corsOptions);
 }

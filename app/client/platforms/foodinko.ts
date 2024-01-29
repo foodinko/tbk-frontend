@@ -5,7 +5,7 @@ import {
   FoodinkoPath,
   REQUEST_TIMEOUT_MS,
   ServiceProvider,
-  // FOODINKO_BASE_URL_DEV_LOCAL,
+  FOODINKO_BASE_URL_DEV_LOCAL,
 } from "@/app/constant";
 import {
   useAccessStore,
@@ -15,6 +15,8 @@ import {
 } from "@/app/store";
 
 import { ChatOptions, getHeaders, LLMApi, LLMModel, LLMUsage } from "../api";
+import { getServerSideConfig } from "@/app/config/server";
+
 import Locale from "../../locales";
 import {
   EventStreamContentType,
@@ -37,12 +39,17 @@ export class FoodinkoApi implements LLMApi {
   private disableListModels = true;
 
   path(path: string): string {
-    // const baseUrl = FOODINKO_BASE_URL_DEV_LOCAL;
+    const serverConfig = getServerSideConfig();
+
     // const baseUrl = process.env.MMW_TTBOKI_BACKEND_HOST;
+    // const baseUrl = serverConfig.foodinkoUrl || FOODINKO_BASE_URL;
+    // const baseUrl = FOODINKO_BASE_URL_DEV_LOCAL;
     const baseUrl = "http://3.26.233.124";
 
     const completePath = [baseUrl, path].join("/");
 
+    console.log("[FoodinkoApi] serverConfig: ", serverConfig);
+    console.log("[FoodinkoApi] serverConfig.foodinkoUrl: ", serverConfig.foodinkoUrl);
     console.log("[FoodinkoApi] complete path: ", completePath);
 
     return completePath;
@@ -127,8 +134,8 @@ export class FoodinkoApi implements LLMApi {
             return;
           }
 
-          console.log("[FoodinkoApi] responseText: ", responseText);
-          console.log("[FoodinkoApi] remainText: ", remainText);
+          // console.log("[FoodinkoApi] responseText: ", responseText);
+          // console.log("[FoodinkoApi] remainText: ", remainText);
 
           if (remainText.length > 0) {
             const fetchCount = Math.max(1, Math.round(remainText.length / 60));

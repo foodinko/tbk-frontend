@@ -27,6 +27,10 @@ export const TBK_CHATBOT_LINK_COPIED = "TBK_CHATBOT_LINK_COPIED";
 
 //-- End 백엔드 constants.py에 정의된 내용과 동기화 필요 --
 
+const CONVERSATION_STATE_NOT_STARTED = "NOT_STARTED";
+const CONVERSATION_STATE_IN_PROGRESS = "IN_PROGRESS";
+const CONVERSATION_STATE_FINISHED = "FINISHED";
+
 const FETCH_STATE_NOT_STARTED = 0;
 const FETCH_STATE_FETCHING = 1;
 const FETCH_STATE_DONE = 2;
@@ -46,6 +50,8 @@ const DEFAULT_USER_STATE = {
 
   linkLlmState: "", // 챗봇 링크 상태
   linkTurnsOverState: "", // 20턴 이후 스마트스토어 링크 상태
+
+  conversationState: "",
 };
 
 export type RegisterUserCallback = (
@@ -100,6 +106,30 @@ export const useUserStore = createPersistStore(
       set({ linkTurnsOverState });
     },
 
+    setConversationStateNotStarted: () => {
+      set({ conversationState: CONVERSATION_STATE_NOT_STARTED });
+    },
+
+    setConversationStateInProgress: () => {
+      set({ conversationState: CONVERSATION_STATE_IN_PROGRESS });
+    },
+
+    setConversationStateFinished: () => {
+      set({ conversationState: CONVERSATION_STATE_FINISHED });
+    },
+
+    isConversationStateNotStarted() {
+      return get().conversationState === CONVERSATION_STATE_NOT_STARTED;
+    },
+
+    isConversationStateInProgress() {
+      return get().conversationState === CONVERSATION_STATE_IN_PROGRESS;
+    },
+
+    isConversationStateFinished() {
+      return get().conversationState === CONVERSATION_STATE_FINISHED;
+    },
+
     async registerUser(
       name: string,
       gender: string,
@@ -120,6 +150,9 @@ export const useUserStore = createPersistStore(
         signal: controller.signal,
         headers: getHeaders(),
       };
+
+      console.log("[user.ts] registerUser path: ", path)
+      console.log("[user.ts] registerUser payload: ", payload)
 
       fetch(path, payload)
         .then((res: Response) => {

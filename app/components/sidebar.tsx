@@ -158,7 +158,7 @@ export function SideBar(props: { className?: string }) {
           BOKI
         </div>
         <div className={styles["sidebar-sub-title"]}>
-          왜 나만보면 보키보키 하는지 모르겠어, 너도 BOKI 해볼래?
+          왜 나만보면 보키보키 하는지 모르겠어, 너도 BOKI 해볼래??
         </div>
         <div className={styles["sidebar-logo"] + " no-dark"}>
           <ChatGptIcon />
