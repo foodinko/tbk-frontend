@@ -77,6 +77,10 @@ if (mode !== "export") {
         destination: "https://sharegpt.com/api/conversations",
       },
       {
+        source: "/api/foodinko/:path*",
+        destination: "https://localhost:3000/:path*",
+      },
+      {
         source: "/api/user/:path*",
         destination: "http://3.26.233.124/:path*",
       },
