@@ -76,6 +76,18 @@ if (mode !== "export") {
         source: "/sharegpt",
         destination: "https://sharegpt.com/api/conversations",
       },
+      {
+        source: "/api/user/:path*",
+        destination: "http://3.26.233.124/:path*",
+      },
+      {
+        source: "/api/chat/:path*",
+        destination: "http://3.26.233.124/:path*",
+      },
+      {
+        source: "/api/analytics/:path*",
+        destination: "http://3.26.233.124/:path*",
+      },
     ];
 
     return {
