@@ -195,14 +195,19 @@ export function Home() {
 
   const handleFetchUserInfo = () => {
     // useUserStore.getState().registerUser("테오1112", "남성");  // for test
-    console.log("[home.tsx] handleFetchUserInfo cookie value: " + useUserStore.getState().cookieValue);
+    console.log(
+      "[home.tsx] handleFetchUserInfo cookie value: " +
+        useUserStore.getState().cookieValue,
+    );
     if (useUserStore.getState().hasCookieValue()) {
       console.log("[home.ts] handleFetchUserInfo cookie value is not empty");
-      useUserStore.getState().fetchUserInfo(useUserStore.getState().cookieValue);
+      useUserStore
+        .getState()
+        .fetchUserInfo(useUserStore.getState().cookieValue);
     } else {
       console.log("[home.tsx] handleFetchUserInfo cookie value is empty");
     }
-  }
+  };
 
   useEffect(() => {
     console.log("[Config] got config from build time", getClientConfig());

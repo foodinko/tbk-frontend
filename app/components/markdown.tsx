@@ -118,10 +118,12 @@ function escapeDollarNumber(text: string) {
 
 function CustomLink({ href, children, onCustomClick, ...props }) {
   const handleLinkClick = (e) => {
-    console.log("[markdown.tsx] handleLinkClick href: " + href)
-    console.log("[markdown.tsx] handleLinkClick children: " + children)
-    console.log("[markdown.tsx] handleLinkClick onCustomClick: " + onCustomClick)
-    console.log("[markdown.tsx] handleLinkClick props: " + props)
+    console.log("[markdown.tsx] handleLinkClick href: " + href);
+    console.log("[markdown.tsx] handleLinkClick children: " + children);
+    console.log(
+      "[markdown.tsx] handleLinkClick onCustomClick: " + onCustomClick,
+    );
+    console.log("[markdown.tsx] handleLinkClick props: " + props);
     onCustomClick(e, href);
   };
 
@@ -132,7 +134,7 @@ function CustomLink({ href, children, onCustomClick, ...props }) {
   );
 }
 
-function _MarkDownContent(props: { content: string, onLinkClick: any}) {
+function _MarkDownContent(props: { content: string; onLinkClick: any }) {
   const escapedContent = useMemo(
     () => escapeDollarNumber(props.content),
     [props.content],
@@ -160,7 +162,9 @@ function _MarkDownContent(props: { content: string, onLinkClick: any}) {
         //   const target = isInternal ? "_self" : aProps.target ?? "_blank";
         //   return <a {...aProps} target={target} />;
         // },
-        a: (aProps) => <CustomLink {...aProps} onCustomClick={props.onLinkClick} />
+        a: (aProps) => (
+          <CustomLink {...aProps} onCustomClick={props.onLinkClick} />
+        ),
       }}
     >
       {escapedContent}
@@ -197,7 +201,10 @@ export function Markdown(
       {props.loading ? (
         <LoadingIcon />
       ) : (
-        <MarkdownContent content={props.content} onLinkClick={props.onLinkClick} />
+        <MarkdownContent
+          content={props.content}
+          onLinkClick={props.onLinkClick}
+        />
       )}
     </div>
   );

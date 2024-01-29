@@ -1,13 +1,13 @@
 import { getClientConfig } from "../config/client";
-import { 
-  ApiPath, 
-  FOODINKO_CORS_HOST
-  // DEFAULT_CORS_HOST 
+import {
+  ApiPath,
+  FOODINKO_CORS_HOST,
+  // DEFAULT_CORS_HOST
 } from "../constant";
 
 export function corsPath(path: string) {
   //const baseUrl = getClientConfig()?.isApp ? `${DEFAULT_CORS_HOST}` : "";
-  const baseUrl = `${FOODINKO_CORS_HOST}`
+  const baseUrl = `${FOODINKO_CORS_HOST}`;
 
   if (!path.startsWith("/")) {
     path = "/" + path;

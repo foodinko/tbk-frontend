@@ -541,9 +541,7 @@ export function ImagePreviewer(props: {
 
           <div>
             <div className={styles["main-title"]}>BOKI</div>
-            <div className={styles["sub-title"]}>
-              https://www.foodinko.com
-            </div>
+            <div className={styles["sub-title"]}>https://www.foodinko.com</div>
             <div className={styles["icons"]}>
               <ExportAvatar avatar={config.avatar} />
               <span className={styles["icon-space"]}>&</span>

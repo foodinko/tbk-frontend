@@ -1,5 +1,5 @@
 import * as React from "react";
-import styles from './chat-user.module.scss';
+import styles from "./chat-user.module.scss";
 
 export const ChatUser = ({ onButtonClick }): JSX.Element => {
   const [inputValue, setInputValue] = React.useState("");
@@ -7,7 +7,7 @@ export const ChatUser = ({ onButtonClick }): JSX.Element => {
   const handleInputChange = (e) => {
     console.log("[ChatUser] handleInputChange: ", e.target.value);
     setInputValue(e.target.value);
-  }
+  };
 
   const handleClick = () => {
     console.log("[ChatUser] Button clicked!");
@@ -30,7 +30,12 @@ export const ChatUser = ({ onButtonClick }): JSX.Element => {
             <span className={styles["span"]}>어떻게 불러드리면 좋을까요?</span>
           </p>
         </div>
-        <input className={styles["input"]} type="text" placeholder="한글, 영문, 숫자 상관없이 입력" onChange={handleInputChange}/>
+        <input
+          className={styles["input"]}
+          type="text"
+          placeholder="한글, 영문, 숫자 상관없이 입력"
+          onChange={handleInputChange}
+        />
         <p className={styles["div-2"]}>
           <span className={styles["text-wrapper-2"]}>확인을 누르면 </span>
           <a

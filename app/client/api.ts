@@ -112,8 +112,7 @@ export class ClientApi {
       .concat([
         {
           from: "human",
-          value:
-            "Share from [BOKI]: https://bokki.foodinko.com",
+          value: "Share from [BOKI]: https://bokki.foodinko.com",
         },
       ]);
     // 敬告二开开发者们，为了开源大模型的发展，请不要修改上述消息，此消息用于后续数据清洗使用
@@ -148,7 +147,7 @@ export function getHeaders() {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     "x-requested-with": "XMLHttpRequest",
-    "Accept": "application/json",
+    Accept: "application/json",
   };
   const modelConfig = useChatStore.getState().currentSession().mask.modelConfig;
   const isGoogle = modelConfig.model === "gemini-pro";

@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSideConfig } from "@/app/config/server";
 
@@ -6,7 +5,6 @@ async function handle(
   req: NextRequest,
   { params }: { params: { path: string[] } },
 ) {
-
   console.log("[Foodinko Route] params ", params);
 
   if (req.method === "OPTIONS") {
@@ -30,7 +28,7 @@ async function handle(
   console.log("[Foodinko Route] Base Url: ", baseUrl);
   console.log("[Foodinko Route] params.path: ", params.path);
   console.log("[Foodinko Route] req.nextUrl.pathname: ", req.nextUrl.pathname);
-  
+
   // Frontend URL: http://localhost:3000/api/foodinko/authenticate_user/b798603e-4dde-40c5-bba7-4cff1663802f
   // [Foodinko Route] Base Url:  http://127.0.0.1:8000
   // [Foodinko Route] params.path:  authenticate_user/b798603e-4dde-40c5-bba7-4cff1663802f
@@ -47,7 +45,7 @@ async function handle(
       controller.abort();
     },
     10 * 60 * 1000,
-  );  
+  );
 
   const fetchUrl = `${baseUrl}${path}`;
   const fetchOptions: RequestInit = {

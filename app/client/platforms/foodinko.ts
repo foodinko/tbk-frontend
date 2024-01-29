@@ -7,7 +7,12 @@ import {
   ServiceProvider,
   FOODINKO_BASE_URL_DEV_LOCAL,
 } from "@/app/constant";
-import { useAccessStore, useAppConfig, useChatStore, useUserStore } from "@/app/store";
+import {
+  useAccessStore,
+  useAppConfig,
+  useChatStore,
+  useUserStore,
+} from "@/app/store";
 
 import { ChatOptions, getHeaders, LLMApi, LLMModel, LLMUsage } from "../api";
 import Locale from "../../locales";
@@ -32,7 +37,7 @@ export class FoodinkoApi implements LLMApi {
   private disableListModels = true;
 
   path(path: string): string {
-    // TODO: baseUrl 개발 환경 구분 
+    // TODO: baseUrl 개발 환경 구분
     const baseUrl = FOODINKO_BASE_URL_DEV_LOCAL;
 
     const completePath = [baseUrl, path].join("/");
@@ -55,7 +60,7 @@ export class FoodinkoApi implements LLMApi {
     //   "role": "user",
     //   "content": "hi!!"
     // }
-    
+
     console.log("[FoodinkoApi] lastMessage: ", lastMessage);
 
     const requestPayload = {
@@ -72,7 +77,7 @@ export class FoodinkoApi implements LLMApi {
       options.onError?.(e);
     };
 
-    const shouldStream = true //!!options.config.stream;
+    const shouldStream = true; //!!options.config.stream;
     const controller = new AbortController();
     options.onController?.(controller);
     try {
@@ -140,7 +145,6 @@ export class FoodinkoApi implements LLMApi {
         animateResponseText();
         fetch(streamChatPath, chatPayload)
           .then((response) => {
-
             console.log("[FoodinkoApi] response: " + response);
 
             const reader = response?.body?.getReader();
@@ -163,7 +167,7 @@ export class FoodinkoApi implements LLMApi {
               console.log("[FoodinkoApi] partialData: ", partialData);
 
               try {
-                let data = partialData
+                let data = partialData;
 
                 console.log("[FoodinkoApi] data: ", data);
 
@@ -183,7 +187,11 @@ export class FoodinkoApi implements LLMApi {
                 }
               } catch (e) {
                 errored = true;
-                console.log("[FoodinkoApi] Response Animation error: ", e,partialData);    
+                console.log(
+                  "[FoodinkoApi] Response Animation error: ",
+                  e,
+                  partialData,
+                );
                 error(e);
               }
 
@@ -200,11 +208,11 @@ export class FoodinkoApi implements LLMApi {
         clearTimeout(requestTimeoutId);
 
         console.log("[FoodinkoApi] Response-res: ", res);
-        
+
         const resJson = await res.json();
-        
+
         console.log("[FoodinkoApi] Response-resJson: ", resJson);
-        
+
         const message = this.extractMessage(resJson);
 
         options.onFinish(message);

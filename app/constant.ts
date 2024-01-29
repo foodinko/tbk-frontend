@@ -269,8 +269,8 @@ export const DEFAULT_MODELS = [
       id: "tbk",
       providerName: "Foodinko",
       providerType: "foodinko",
-    }
-  }
+    },
+  },
 ] as const;
 
 export const CHAT_PAGE_SIZE = 15;

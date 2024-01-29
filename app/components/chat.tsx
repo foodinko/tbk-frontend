@@ -55,7 +55,7 @@ import {
   BOT_WHAT_KIND_TBK,
   BOT_EMPTY_COUNT,
   BOT_WELCOME_BACK,
-  BOT_WELCOME_LONG_TIME
+  BOT_WELCOME_LONG_TIME,
 } from "../store";
 
 import {
@@ -453,7 +453,7 @@ function _Chat() {
   };
 
   const handleCheckCookie = () => {
-    if ( useUserStore.getState().hasCookieValue() ) {
+    if (useUserStore.getState().hasCookieValue()) {
       console.log("[chat.tsx] cookieValue is not empty");
       // for TEST
       // handleResetUser();
@@ -464,18 +464,18 @@ function _Chat() {
       handleDeleteMessageBotWelcomeBack();
       handleDeleteMessageBotLongTime();
 
-      if ( isUnder20Turn() && isLastMessageToday() ) {
+      if (isUnder20Turn() && isLastMessageToday()) {
         // 20턴 이하, 당일
         console.log("[chat.tsx] isUnder20Turn() && isLastMessageToday()");
         sendMessageWelcomeBack(getUserName());
         enableKeyboard(true);
-      } else if ( isUnder20Turn() && !isLastMessageToday() ) {
+      } else if (isUnder20Turn() && !isLastMessageToday()) {
         // 20턴 이하, 다음날
         console.log("[chat.tsx] isUnder20Turn() && !isLastMessageToday()");
         // TODO: '오늘' 컴포넌트 출력
         sendMessageWelcomeLongTime(getUserName());
         enableKeyboard(true);
-      } else if ( isOver20Turn() ) {
+      } else if (isOver20Turn()) {
         // 20턴 넘어갔다면
         console.log("[chat.tsx] isOver20Turn()");
         // TODO: '오늘' 컴포넌트 출력
@@ -499,10 +499,16 @@ function _Chat() {
   };
 
   const handleCheckTurn = () => {
-    console.log("[chat.tsx] handleCheckTurn session.messages.length: ", session.messages.length);
-    console.log("[chat.tsx] handleCheckTurn getUserMessageCount: ", getUserMessageCount());
+    console.log(
+      "[chat.tsx] handleCheckTurn session.messages.length: ",
+      session.messages.length,
+    );
+    console.log(
+      "[chat.tsx] handleCheckTurn getUserMessageCount: ",
+      getUserMessageCount(),
+    );
 
-    if ( isOver20Turn() ) {
+    if (isOver20Turn()) {
       console.log("[chat.tsx] isOver20Turn");
       enableKeyboard(false);
       sendMessageEmptyCount();
@@ -511,13 +517,12 @@ function _Chat() {
       sendMessageSeeYouAgain();
       handleEndConversation();
     }
-      
   };
 
   const handleResetUser = () => {
     console.log("[chat.tsx] handleResetUser");
     useUserStore.getState().resetUser();
-  }
+  };
 
   const handleDeleteMessage = (message: string) => {
     console.log("[chat.tsx] handleDeleteMessage message: ", message);
@@ -530,105 +535,128 @@ function _Chat() {
       console.log("[chat.tsx] handleDeleteMessage m: ", m);
       deleteMessage(m.id);
     });
-  }
+  };
 
   const handleDeleteMessageBotWelcomeBack = () => {
     console.log("[chat.tsx] handleDeleteMessageBotWelcomeBack");
     const msg = Locale.Store.BotWelcomeBack(getUserName());
     handleDeleteMessage(msg);
-  }
+  };
 
   const handleDeleteMessageBotLongTime = () => {
     console.log("[chat.tsx] handleDeleteMessageBotLongTime");
     const msg = Locale.Store.BotWelcomeLongTime(getUserName());
     handleDeleteMessage(msg);
-  }
+  };
 
   const handleClearSessions = () => {
     console.log("[chat.tsx] handleClearSessions");
     chatStore.clearSessions();
-  }
+  };
 
   const handleSendMessageHello = () => {
     sendMessageHello();
-  }
+  };
 
   const handleRegisterUser = () => {
-    if ( useUserStore.getState().hasCookieValue() ) {
+    if (useUserStore.getState().hasCookieValue()) {
       console.log("[chat.tsx] registerUser is not empty cookie");
     } else {
       console.log("[chat.tsx] registerUser is empty cookie");
 
-      const userName = getUserName()
-      const gender = useUserStore.getState().gender
+      const userName = getUserName();
+      const gender = useUserStore.getState().gender;
 
-      useUserStore.getState().registerUser(userName, gender, (error, userId, cookieValue) => { 
-        if (error) {
-          console.log("[chat.tsx] registerUser error: ", error);
-        } else {
-          console.log("[chat.tsx] registerUser success userId: ", userId + " cookieValue: " + cookieValue);
-          handleStartConversation();
-        }
-      });
+      useUserStore
+        .getState()
+        .registerUser(userName, gender, (error, userId, cookieValue) => {
+          if (error) {
+            console.log("[chat.tsx] registerUser error: ", error);
+          } else {
+            console.log(
+              "[chat.tsx] registerUser success userId: ",
+              userId + " cookieValue: " + cookieValue,
+            );
+            handleStartConversation();
+          }
+        });
     }
-  }
+  };
 
   const handleStartConversation = () => {
     console.log("[chat.tsx] startConversation-1");
-    if ( useUserStore.getState().hasCookieValue() ) {
+    if (useUserStore.getState().hasCookieValue()) {
       console.log("[chat.tsx] startConversation-2");
-      useUserStore.getState().startConversation((error, conversationId, greeting, startTime) => {
-        if (error) {
-          console.log("[chat.tsx] startConversation error: ", error);
-        } else {
-          console.log("[chat.tsx] startConversation success conversationId: ", conversationId + " greeting: " + greeting + " startTime: " + startTime);
-          visibleKeyboard(true);
-        }
-      }
-    )}
-  }
+      useUserStore
+        .getState()
+        .startConversation((error, conversationId, greeting, startTime) => {
+          if (error) {
+            console.log("[chat.tsx] startConversation error: ", error);
+          } else {
+            console.log(
+              "[chat.tsx] startConversation success conversationId: ",
+              conversationId +
+                " greeting: " +
+                greeting +
+                " startTime: " +
+                startTime,
+            );
+            visibleKeyboard(true);
+          }
+        });
+    }
+  };
 
   const handleSmartStoreLinkProvided = () => {
     console.log("[chat.tsx] handleSmartStoreLinkProvided");
     // TODO: 링크 제공 기록 API 호출
     // useUserStore.getState().recordSmartStoreLink();
-  }
+  };
 
   const handleLinkClicked = () => {
     console.log("[chat.tsx] handleLinkClicked");
     // TODO: 클릭 이벤트 API 호출
     // TODO: 콜백 함수에서 handleStartConversation() 호출
-  }
+  };
 
   const handleEndConversation = () => {
     // TODO: 대화 종료 API 호출
-  }
+  };
 
   const handleButtonClickGender = (gender: string) => {
     useUserStore.getState().setGender(gender);
     console.log("[chat.tsx] handleButtonClickGender gender: ", gender);
-    console.log("[chat.tsx] handleButtonClickGender useUserStore.getState().gender: ", useUserStore.getState().gender);
+    console.log(
+      "[chat.tsx] handleButtonClickGender useUserStore.getState().gender: ",
+      useUserStore.getState().gender,
+    );
     visibleChatGender(false);
     sendMessageSelectGender(gender);
     sendMessageAskName();
     visibleChatUser(true);
-  }
+  };
 
   const handleButtonClickUserName = (userName: string) => {
     useUserStore.getState().setUserName(userName);
     console.log("[chat.tsx] handleButtonClickUserName userName: ", userName);
-    console.log("[chat.tsx] handleButtonClickUserName getUserName(): ", getUserName());
+    console.log(
+      "[chat.tsx] handleButtonClickUserName getUserName(): ",
+      getUserName(),
+    );
     visibleChatUser(false);
     sendMessageSelectUserName(userName);
     sendMessageWhatKindTbk(userName);
     handleRegisterUser();
-  }
+  };
 
-  const handleLinkClick = (event: React.MouseEvent<HTMLAnchorElement>, url: string) => {
+  const handleLinkClick = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    url: string,
+  ) => {
     console.log("[chat.tsx] handleLinkClick url: ", url);
 
     event.preventDefault();
-    const win = window.open(url, '_blank');
+    const win = window.open(url, "_blank");
     win?.focus();
 
     // TODO: 링크 종류 구분
@@ -636,33 +664,40 @@ function _Chat() {
     // 2. LLM에서 제공하는 스마트 스토어 링크
     // 3. LLM에서 제공하는 추천 가게 링크
     handleLinkClicked();
-  }
+  };
 
   const getPlaceholder = () => {
-    return isEnabledKeyboard ? Locale.Chat.InputEnabled : Locale.Chat.InputDisabled;
+    return isEnabledKeyboard
+      ? Locale.Chat.InputEnabled
+      : Locale.Chat.InputDisabled;
   };
 
   const getUserName = () => {
-    return useUserStore.getState().userName
-  }
+    return useUserStore.getState().userName;
+  };
 
   const getUserMessageCount = () => {
     // console.log("[chat.tsx] getUserMessageCount session.messages: ", session.messages);
     const userMessageCount = session.messages.filter(
-      (m) => m.role === "user" && m.conversationId === useUserStore.getState().conversationId,
+      (m) =>
+        m.role === "user" &&
+        m.conversationId === useUserStore.getState().conversationId,
     ).length;
     return userMessageCount;
-  }
+  };
 
   const isUnder20Turn = () => {
     const userMessageCount = getUserMessageCount();
     const isUnder20Turn = userMessageCount < MAX_MESSAGE_COUNT;
 
-    console.log("[chat.tsx] isUnder20Turn userMessageCount: ", userMessageCount);
+    console.log(
+      "[chat.tsx] isUnder20Turn userMessageCount: ",
+      userMessageCount,
+    );
     console.log("[chat.tsx] isUnder20Turn isUnder20Turn: ", isUnder20Turn);
 
     return isUnder20Turn;
-  }
+  };
 
   const isOver20Turn = () => {
     const userMessageCount = getUserMessageCount();
@@ -672,200 +707,209 @@ function _Chat() {
     console.log("[chat.tsx] isOver20Turn isOver20Turn: ", isOver20Turn);
 
     return isOver20Turn;
-  }
+  };
 
   const getLastMessage = () => {
     const lastMessage = session.messages.slice(-1)[0];
     return lastMessage;
-  }
+  };
 
   const parseDate = (str: string) => {
     // Example input: "2024. 1. 28. 오후 1:40:50"
     let [year, month, day, partOfDay, time] = str.split(/[\s.]+/);
-    let [hours, minutes, seconds] = time.split(':');
+    let [hours, minutes, seconds] = time.split(":");
 
     // Convert hours in 12-hour format to 24-hour format
-    if (partOfDay === '오후' && hours !== '12') {
+    if (partOfDay === "오후" && hours !== "12") {
       hours = (parseInt(hours, 10) + 12).toString();
-    } else if (partOfDay === '오전' && hours === '12') {
-      hours = '00';
+    } else if (partOfDay === "오전" && hours === "12") {
+      hours = "00";
     }
-    
-    const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes}:${seconds}`;
+
+    const isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
+      2,
+      "0",
+    )}T${hours.padStart(2, "0")}:${minutes}:${seconds}`;
     return new Date(isoDate);
-  }
+  };
 
   const isToday = (datetimeStr: string) => {
     const parsedDate = parseDate(datetimeStr);
     const isoDate = parsedDate.toISOString();
-    const datetime = moment(isoDate)
-    const now = moment().startOf('day')
-    const isSame = datetime.isSame(now, 'd')
-    console.log("[chat.tsx] isToday datetimeStr: ", datetimeStr)
-    console.log("[chat.tsx] isToday datetime: ", datetime)
-    console.log("[chat.tsx] isToday now: ", now)
-    console.log("[chat.tsx] isToday isSame: ", isSame)
-    return isSame
-  }
+    const datetime = moment(isoDate);
+    const now = moment().startOf("day");
+    const isSame = datetime.isSame(now, "d");
+    console.log("[chat.tsx] isToday datetimeStr: ", datetimeStr);
+    console.log("[chat.tsx] isToday datetime: ", datetime);
+    console.log("[chat.tsx] isToday now: ", now);
+    console.log("[chat.tsx] isToday isSame: ", isSame);
+    return isSame;
+  };
 
   const isWithin30Minutes = (datetimeStr: string) => {
     const parsedDate = parseDate(datetimeStr);
     const isoDate = parsedDate.toISOString();
-    const datetime = moment(isoDate)
-    const now = moment()
-    return now.diff(datetime, 'minutes') < SESSION_LIMIT_MIN
-  }
+    const datetime = moment(isoDate);
+    const now = moment();
+    return now.diff(datetime, "minutes") < SESSION_LIMIT_MIN;
+  };
 
   const isSameDate = (prevDate: string, nextDate: string) => {
-    const prev = new Date(prevDate)
-    const next = new Date(nextDate)
+    const prev = new Date(prevDate);
+    const next = new Date(nextDate);
 
-    console.log(`isSameDate prev: ${prev}, next: ${next}`)
+    console.log(`isSameDate prev: ${prev}, next: ${next}`);
 
-    return 
-    prev.getFullYear() === next.getFullYear() 
-    && prev.getMonth() === next.getMonth() 
-    && prev.getDate() === next.getDate()
-  }
+    return;
+    prev.getFullYear() === next.getFullYear() &&
+      prev.getMonth() === next.getMonth() &&
+      prev.getDate() === next.getDate();
+  };
 
   const isLastMessageToday = () => {
     const lastMessage = getLastMessage();
     return isToday(lastMessage.date.toLocaleString());
-  }
+  };
 
   const getSubTitleForUserMessageCount = () => {
     const userMessageCount = getUserMessageCount();
-    const remainCount = MAX_MESSAGE_COUNT-userMessageCount
+    const remainCount = MAX_MESSAGE_COUNT - userMessageCount;
     const subTitle = Locale.Chat.SubTitle(remainCount);
     return subTitle;
-  }
+  };
 
   const sendUserMessage = (role: string, content: string) => {
     // context.push(message);
     chatStore.onSendUserMessage(role, content);
-    console.log("[chat.tsx] sendUserMessage session.messages.length: " + session.messages.length);
-  }
+    console.log(
+      "[chat.tsx] sendUserMessage session.messages.length: " +
+        session.messages.length,
+    );
+  };
 
   const sendChatbotMessage = (role: string, content: string) => {
     // context.push(message);
     chatStore.onSendChatbotMessage(role, content);
-    console.log("[chat.tsx] sendChatbotMessage session.messages.length: " + session.messages.length);
-  }
+    console.log(
+      "[chat.tsx] sendChatbotMessage session.messages.length: " +
+        session.messages.length,
+    );
+  };
 
   const sendMessageHello = () => {
-    const role = "assistant"
-    const content = Locale.Store.BotHello
+    const role = "assistant";
+    const content = Locale.Store.BotHello;
 
     console.log("[chat.tsx] sendMessageHello: ", role, content);
 
     sendChatbotMessage(role, content);
-  }
+  };
 
   const sendMessageAskGender = () => {
-    const role = "assistant"
-    const content = Locale.Store.BotAskGender
+    const role = "assistant";
+    const content = Locale.Store.BotAskGender;
 
     console.log("[chat.tsx] sendMessageAskGender: ", role, content);
 
     sendChatbotMessage(role, content);
-  }
+  };
 
   const sendMessageSelectGender = (gender: string) => {
-    const role = "user-settings"
-    const content = gender
+    const role = "user-settings";
+    const content = gender;
 
     console.log("[chat.tsx] sendMessageSelectGender: ", role, content);
 
     sendUserMessage(role, content);
-  }
+  };
 
   const sendMessageAskName = () => {
-    const role = "assistant"
-    const content = Locale.Store.BotAskName
+    const role = "assistant";
+    const content = Locale.Store.BotAskName;
 
     console.log("[chat.tsx] sendMessageAskName: ", role, content);
 
     sendChatbotMessage(role, content);
-  }
+  };
 
   const sendMessageSelectUserName = (userName: string) => {
-    const role = "user-settings"
-    const content = userName
+    const role = "user-settings";
+    const content = userName;
 
     console.log("[chat.tsx] sendMessageSelectUserName: ", role, content);
 
     sendUserMessage(role, content);
-  }
+  };
 
   const sendMessageWhatKindTbk = (userName: string) => {
-    const role = "assistant"
-    const content = Locale.Store.BotWhatKindTbk(userName)
+    const role = "assistant";
+    const content = Locale.Store.BotWhatKindTbk(userName);
 
     console.log("[chat.tsx] sendMessageWhatKindTbk: ", role, content);
 
     sendChatbotMessage(role, content);
-  }
+  };
 
   const sendMessageEmptyCount = (userName: string) => {
-    const role = "assistant"
-    const content = Locale.Store.BotEmptyCount(userName)
+    const role = "assistant";
+    const content = Locale.Store.BotEmptyCount(userName);
 
     console.log("[chat.tsx] sendMessageEmptyCount: ", role, content);
 
     sendChatbotMessage(role, content);
-  }
+  };
 
   const sendMessageSmartStoreLink = () => {
-    const role = "assistant"
-    const content = Locale.Store.BotSmartStoreLink
+    const role = "assistant";
+    const content = Locale.Store.BotSmartStoreLink;
 
     console.log("[chat.tsx] sendMessageSmartStoreLink: ", role, content);
 
     sendChatbotMessage(role, content);
-  }
+  };
 
   const sendMessageSeeYouAgain = () => {
-    const role = "assistant"
-    const content = Locale.Store.BotSeeYouAgain
+    const role = "assistant";
+    const content = Locale.Store.BotSeeYouAgain;
 
     console.log("[chat.tsx] sendMessageSeeYouAgain: ", role, content);
 
     sendChatbotMessage(role, content);
-  }
+  };
 
   const sendMessageWelcomeBack = (userName: string) => {
-    const role = "assistant"
-    const content = Locale.Store.BotWelcomeBack(userName)
+    const role = "assistant";
+    const content = Locale.Store.BotWelcomeBack(userName);
 
     console.log("[chat.tsx] sendMessageWelcomeBack: ", role, content);
 
     sendChatbotMessage(role, content);
-  }
+  };
 
   const sendMessageWelcomeLongTime = (userName: string) => {
-    const role = "assistant"
-    const content = Locale.Store.BotWelcomeLongTime(userName)
+    const role = "assistant";
+    const content = Locale.Store.BotWelcomeLongTime(userName);
 
     console.log("[chat.tsx] sendMessageWelcomeLongTime: ", role, content);
 
     sendChatbotMessage(role, content);
-  }
+  };
 
   const visibleKeyboard = (isVisible: boolean) => {
     setIsShowKeyboard(isVisible);
-  }
+  };
 
   const enableKeyboard = (isEnabled: boolean) => {
     setIsEnabledKeyboard(isEnabled);
-  }
+  };
 
   const visibleChatUser = (isVisible: boolean) => {
     setIsShowChatUser(isVisible);
-  }
+  };
 
   const visibleChatGender = (isVisible: boolean) => {
     setIsShowChatGender(isVisible);
-  }
+  };
 
   useEffect(() => {
     chatStore.updateCurrentSession((session) => {
@@ -1013,39 +1057,37 @@ function _Chat() {
 
   useEffect(() => {
     handleCheckTurn();
-}, [session.messages.length]);
+  }, [session.messages.length]);
 
   // preview messages
   const renderMessages = useMemo(() => {
-    return context
-      .concat(session.messages as RenderMessage[])
-      .concat(
-        isLoading
-          ? [
-              {
-                ...createMessage({
-                  role: "assistant",
-                  content: "……",
-                }),
-                preview: true,
-              },
-            ]
-          : [],
-      )
-      // 사용자 입력 메시지 채팅 바디에서 미리보기
-      // .concat(
-      //   userInput.length > 0 && config.sendPreviewBubble
-      //     ? [
-      //         {
-      //           ...createMessage({
-      //             role: "user",
-      //             content: userInput,
-      //           }),
-      //           preview: true,
-      //         },
-      //       ]
-      //     : [],
-      // );
+    return context.concat(session.messages as RenderMessage[]).concat(
+      isLoading
+        ? [
+            {
+              ...createMessage({
+                role: "assistant",
+                content: "……",
+              }),
+              preview: true,
+            },
+          ]
+        : [],
+    );
+    // 사용자 입력 메시지 채팅 바디에서 미리보기
+    // .concat(
+    //   userInput.length > 0 && config.sendPreviewBubble
+    //     ? [
+    //         {
+    //           ...createMessage({
+    //             role: "user",
+    //             content: userInput,
+    //           }),
+    //           preview: true,
+    //         },
+    //       ]
+    //     : [],
+    // );
   }, [
     config.sendPreviewBubble,
     context,
@@ -1134,7 +1176,10 @@ function _Chat() {
           url?: string;
         };
 
-        console.log("[Command] got getSubTitleForUserMessageCount from url: ", payload);
+        console.log(
+          "[Command] got getSubTitleForUserMessageCount from url: ",
+          payload,
+        );
 
         if (payload.key || payload.url) {
           showConfirm(
@@ -1153,7 +1198,10 @@ function _Chat() {
           });
         }
       } catch {
-        console.error("[Command] failed to get getSubTitleForUserMessageCount from url: ", text);
+        console.error(
+          "[Command] failed to get getSubTitleForUserMessageCount from url: ",
+          text,
+        );
       }
     },
   });
@@ -1254,7 +1302,8 @@ function _Chat() {
         }}
       >
         {messages.map((message, i) => {
-          const isUser = message.role === "user" || message.role === "user-settings";
+          const isUser =
+            message.role === "user" || message.role === "user-settings";
           const isContext = i < context.length;
           const showActions =
             i > 0 &&
@@ -1266,7 +1315,6 @@ function _Chat() {
 
           return (
             <Fragment key={message.id}>
-              
               <div
                 className={
                   isUser ? styles["chat-message-user"] : styles["chat-message"]
@@ -1327,7 +1375,7 @@ function _Chat() {
 
                   {/* 메시지 말풍선 아래 날짜 */}
                   <div className={styles["chat-message-action-date"]}>
-                      {message.date.toLocaleString()}
+                    {message.date.toLocaleString()}
                   </div>
                 </div>
               </div>
@@ -1336,49 +1384,56 @@ function _Chat() {
           );
         })}
 
-        {isShowChatUser && ( <ChatUser onButtonClick={handleButtonClickUserName} />)}
-        {isShowChatGender && ( <ChatGender onButtonClick={handleButtonClickGender} />)}
+        {isShowChatUser && (
+          <ChatUser onButtonClick={handleButtonClickUserName} />
+        )}
+        {isShowChatGender && (
+          <ChatGender onButtonClick={handleButtonClickGender} />
+        )}
       </div>
 
       {/* 입력창 */}
-      {isShowKeyboard && ( 
+      {isShowKeyboard && (
         <div className={styles["chat-input-panel"]}>
-        <div className={styles["chat-input-panel-inner"]}>
-          <textarea
-            ref={inputRef}
-            className={`${styles["chat-input"]} ${!isEnabledKeyboard ? styles['disabled-input'] : ''}`}
-            placeholder={getPlaceholder()}
-            onInput={(e) => onInput(e.currentTarget.value)}
-            value={userInput}
-            onKeyDown={onInputKeyDown}
-            onFocus={scrollToBottom}
-            onClick={scrollToBottom}
-            rows={inputRows}
-            autoFocus={autoFocus}
-            style={{
-              fontSize: config.fontSize
-            }}
-          />
-          <IconButton
-            icon={<SendWhiteIcon />}
-            // text={Locale.Chat.Send}
-            text=""
-            className={`${styles["chat-input-send"]} ${!isEnabledKeyboard ? styles['disabled-input'] : ''}`}
-            type="primary"
-            onClick={() => doSubmit(userInput)}
-          />
-        </div>
+          <div className={styles["chat-input-panel-inner"]}>
+            <textarea
+              ref={inputRef}
+              className={`${styles["chat-input"]} ${
+                !isEnabledKeyboard ? styles["disabled-input"] : ""
+              }`}
+              placeholder={getPlaceholder()}
+              onInput={(e) => onInput(e.currentTarget.value)}
+              value={userInput}
+              onKeyDown={onInputKeyDown}
+              onFocus={scrollToBottom}
+              onClick={scrollToBottom}
+              rows={inputRows}
+              autoFocus={autoFocus}
+              style={{
+                fontSize: config.fontSize,
+              }}
+            />
+            <IconButton
+              icon={<SendWhiteIcon />}
+              // text={Locale.Chat.Send}
+              text=""
+              className={`${styles["chat-input-send"]} ${
+                !isEnabledKeyboard ? styles["disabled-input"] : ""
+              }`}
+              type="primary"
+              onClick={() => doSubmit(userInput)}
+            />
+          </div>
 
-        <div className={styles["label-chatgpt"]}>
-          <p className={styles["chatgpt"]}>
-            인공지능 답변은 ChatGPT 기반이며, 정확하지 않은 답변으로
-            <br />
-            생각되면 사실 여부를 한번 더 체크해 보세요.
-          </p>
+          <div className={styles["label-chatgpt"]}>
+            <p className={styles["chatgpt"]}>
+              인공지능 답변은 ChatGPT 기반이며, 정확하지 않은 답변으로
+              <br />
+              생각되면 사실 여부를 한번 더 체크해 보세요.
+            </p>
+          </div>
         </div>
-
-      </div>
-       )}
+      )}
 
       {/* 우상단 버튼 이벤트 */}
       {showExport && (

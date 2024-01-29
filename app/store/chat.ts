@@ -85,28 +85,28 @@ export const BOT_WHAT_KIND_TBK: ChatMessage = (userName: string) => {
     role: "assistant",
     content: Locale.Store.BotWhatKindTbk(userName),
   });
-}
+};
 
 export const BOT_EMPTY_COUNT: ChatMessage = (userName: string) => {
   return createMessage({
     role: "assistant",
     content: Locale.Store.BotEmptyCount(userName),
   });
-}
+};
 
 export const BOT_WELCOME_BACK: ChatMessage = (userName: string) => {
   return createMessage({
     role: "assistant",
     content: Locale.Store.BotWelcomeBack(userName),
   });
-}
+};
 
 export const BOT_WELCOME_LONG_TIME: ChatMessage = (userName: string) => {
   return createMessage({
     role: "assistant",
     content: Locale.Store.BotWelcomeLongTime(userName),
   });
-}
+};
 
 function createEmptySession(): ChatSession {
   return {
@@ -324,14 +324,14 @@ export const useChatStore = createPersistStore(
         const userMessage: ChatMessage = createMessage({
           role: "user",
           content: userContent,
-          conversationId: useUserStore.getState().conversationId
+          conversationId: useUserStore.getState().conversationId,
         });
 
         const botMessage: ChatMessage = createMessage({
           role: "assistant",
           streaming: true,
           model: modelConfig.model,
-          conversationId: useUserStore.getState().conversationId
+          conversationId: useUserStore.getState().conversationId,
         });
 
         console.log("[chat.ts] onUserInput() userMessage: ", userMessage);
@@ -354,17 +354,29 @@ export const useChatStore = createPersistStore(
           ]);
         });
 
-        console.log("[chat.ts] onUserInput() modelConfig.model: ", modelConfig.model);
+        console.log(
+          "[chat.ts] onUserInput() modelConfig.model: ",
+          modelConfig.model,
+        );
 
         var api: ClientApi;
         if (modelConfig.model === "foodinko-tbk") {
-          console.log("[chat.ts] onUserInput() foodinko-tbk modelConfig.model: ", modelConfig.model);
+          console.log(
+            "[chat.ts] onUserInput() foodinko-tbk modelConfig.model: ",
+            modelConfig.model,
+          );
           api = new ClientApi(ModelProvider.FoodinkoTbk);
         } else if (modelConfig.model === "gemini-pro") {
-          console.log("[chat.ts] onUserInput() gemini-pro modelConfig.model: ", modelConfig.model);
+          console.log(
+            "[chat.ts] onUserInput() gemini-pro modelConfig.model: ",
+            modelConfig.model,
+          );
           api = new ClientApi(ModelProvider.GeminiPro);
         } else {
-          console.log("[chat.ts] onUserInput() gpt modelConfig.model: ", modelConfig.model);
+          console.log(
+            "[chat.ts] onUserInput() gpt modelConfig.model: ",
+            modelConfig.model,
+          );
           api = new ClientApi(ModelProvider.GPT);
         }
 
@@ -432,15 +444,13 @@ export const useChatStore = createPersistStore(
           role: role,
           content: userContent,
         });
-content
+        content;
         get().updateCurrentSession((session) => {
           // const savedMessage = {
           //   ...userMessage,
           //   content,
           // };
-          session.messages = session.messages.concat([
-            userMessage,
-          ]);
+          session.messages = session.messages.concat([userMessage]);
         });
       },
 
@@ -457,9 +467,7 @@ content
         });
 
         get().updateCurrentSession((session) => {
-          session.messages = session.messages.concat([
-            botMessage,
-          ]);
+          session.messages = session.messages.concat([botMessage]);
         });
       },
 
