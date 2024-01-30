@@ -92,10 +92,10 @@ if (mode !== "export") {
       //   source: "/api/user/:path*",
       //   destination: "http://3.26.233.124/api/user/:path*",
       // },
-      {
-        source: "/stream_completions",
-        destination: "http://api-boki.foodinko.com/:path*",
-      },
+      // {
+      //   source: "/stream_completions",
+      //   destination: "https://api-boki.foodinko.com/:path*",
+      // },
     ];
 
     return {

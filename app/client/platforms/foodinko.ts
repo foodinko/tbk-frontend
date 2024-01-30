@@ -45,7 +45,7 @@ export class FoodinkoApi implements LLMApi {
     // const baseUrl = serverConfig.foodinkoUrl || FOODINKO_BASE_URL;
     // const baseUrl = FOODINKO_BASE_URL_DEV_LOCAL;
     // const baseUrl = "http://3.26.233.124";
-    const baseUrl = "http://api-boki.foodinko.com";
+    const baseUrl = "https://api-boki.foodinko.com";
 
     const completePath = [baseUrl, path].join("/");
 
