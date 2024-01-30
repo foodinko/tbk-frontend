@@ -72,6 +72,11 @@ async function handle(
       statusText: res.statusText,
       headers: newHeaders,
     });
+  } catch (err) {
+    console.log("[Foodinko Route] err: ", err);
+    return NextResponse.json(err, {
+      status: 500,
+    });
   } finally {
     clearTimeout(timeoutId);
   }

@@ -81,40 +81,16 @@ if (mode !== "export") {
       //   destination: "https://localhost:3000/:path*",
       // },
       // {
-      //   source: "/api/foodinko/:path*",
-      //   destination: "http://3.26.233.124/:path*",
-      // },
-      // {
-      //   source: "/api/foodinko/:path*",
-      //   destination: "http://3.26.233.124/:path*",
-      // },
-      // {
-      //   source: "/api/foodinko/:path*",
-      //   destination: "http://3.26.233.124/:path*",
-      // },
-      // {
       //   source: "/api/user/:path*",
       //   destination: "http://3.26.233.124/:path*",
       // },
       // {
-      //   source: "/api/chat/:path*",
-      //   destination: "http://3.26.233.124/:path*",
-      // },
-      // {
-      //   source: "/api/analytics/:path*",
+      //   source: "/user/:path*",
       //   destination: "http://3.26.233.124/:path*",
       // },
       {
-        source: "/user/:path*",
-        destination: "http://3.26.233.124/:path*",
-      },
-      {
-        source: "/chat/:path*",
-        destination: "http://3.26.233.124/:path*",
-      },
-      {
-        source: "/analytics/:path*",
-        destination: "http://3.26.233.124/:path*",
+        source: "/api/user/:path*",
+        destination: "http://3.26.233.124/api/user/:path*",
       },
     ];
 
