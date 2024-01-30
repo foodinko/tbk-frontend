@@ -88,10 +88,10 @@ if (mode !== "export") {
       //   source: "/user/:path*",
       //   destination: "http://3.26.233.124/:path*",
       // },
-      {
-        source: "/api/user/:path*",
-        destination: "http://3.26.233.124/api/user/:path*",
-      },
+      // {
+      //   source: "/api/user/:path*",
+      //   destination: "http://3.26.233.124/api/user/:path*",
+      // },
     ];
 
     return {
