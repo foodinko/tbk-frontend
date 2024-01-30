@@ -16,7 +16,8 @@ async function handle(
   const serverConfig = getServerSideConfig();
 
   // let baseUrl = serverConfig.foodinkoUrl || "";
-  let baseUrl = "http://3.26.233.124";
+  //let baseUrl = "http://3.26.233.124";
+  let baseUrl = "http://api-boki.foodinko.com";
 
   // if (!baseUrl.startsWith("http")) {
   //   baseUrl = `https://${baseUrl}`;
