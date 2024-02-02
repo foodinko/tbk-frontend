@@ -4,14 +4,22 @@
   position: relative;
 
   display: flex;
-  justify-content: space-between;
+  // justify-content: space-between;
+  justify-content: center;
   align-items: center;
 }
 
 .window-header-title {
-  max-width: calc(100% - 100px);
+  // max-width: calc(100% - 100px);
+  // overflow: hidden;
+  // margin-left: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center align the title elements */
+  justify-content: center; /* This centers the content vertically if needed */
+  max-width: calc(100% - 100px); /* Adjust if necessary to accommodate .window-actions */
+  margin: 0 auto; /* Center the element within the parent */
   overflow: hidden;
-  margin-left: 10px;
 
   .window-header-main-title {
     font-size: 20px;
@@ -25,11 +33,27 @@
 
   .window-header-sub-title {
     font-size: 14px;
+    color: #222222;
+    opacity: 0.5;
   }
+
+  .window-header-main-title, .window-header-sub-title {
+    /* Inherit alignment from .window-header-title, adjustments may not be needed */
+    /* Ensure text overflow management */
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
 }
 
+// .window-actions {
+//   display: inline-flex;
+// }
 .window-actions {
-  display: inline-flex;
+  position: absolute;
+  right: 20px; /* Adjust based on layout needs */
+  top: 50%;
+  transform: translateY(-50%); /* Adjust vertically to align with the center */
 }
 
 .window-action-button:not(:first-child) {

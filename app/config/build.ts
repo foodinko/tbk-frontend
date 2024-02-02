@@ -10,6 +10,8 @@ export const getBuildConfig = () => {
   const buildMode = process.env.BUILD_MODE ?? "standalone";
   const isApp = !!process.env.BUILD_APP;
   const version = "v" + tauriConfig.package.version;
+  const foodinkoUrl = process.env.MMW_TTBOKI_BACKEND_HOST;
+  const debugMode = process.env.DEBUG_MODE ? true : false;
 
   const commitInfo = (() => {
     try {
@@ -38,6 +40,8 @@ export const getBuildConfig = () => {
     ...commitInfo,
     buildMode,
     isApp,
+    foodinkoUrl,
+    debugMode,
   };
 };
 

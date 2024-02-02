@@ -56,6 +56,7 @@ import {
   BOT_EMPTY_COUNT,
   BOT_WELCOME_BACK,
   BOT_WELCOME_LONG_TIME,
+  UserInputCallbackStatus,
 } from "../store";
 
 import {
@@ -101,6 +102,9 @@ import { prettyObject } from "../utils/format";
 import { ExportMessageModal } from "./exporter";
 import { getClientConfig } from "../config/client";
 import { useAllModels } from "../utils/hooks";
+
+import Skeleton from "react-loading-skeleton";
+import 'react-loading-skeleton/dist/skeleton.css';
 
 const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
@@ -336,8 +340,9 @@ function _Chat() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isShowKeyboard, setIsShowKeyboard] = useState(true);
-  const [isEnabledKeyboard, setIsEnabledKeyboard] = useState(true);
+  const [isLoadingStartConversation, setIsLoadingStartConversation] = useState(false);
+  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
+  const [isEnabledKeyboard, setIsEnabledKeyboard] = useState(false);
   const [isShowChatGender, setIsShowChatGender] = useState(false);
   const [isShowChatUser, setIsShowChatUser] = useState(false);
   const { submitKey, shouldSubmit } = useSubmitHandler();
@@ -345,6 +350,7 @@ function _Chat() {
   const [hitBottom, setHitBottom] = useState(true);
   const isMobileScreen = useMobileScreen();
   const navigate = useNavigate();
+  const [userInputStatus, setUserInputStatus] = useState<UserInputCallbackStatus>(UserInputCallbackStatus.None);
 
   // prompt hints
   const promptStore = usePromptStore();
@@ -414,15 +420,34 @@ function _Chat() {
 
   const doSubmit = (userInput: string) => {
     if (userInput.trim() === "") return;
-    // const matchCommand = chatCommands.match(userInput);
-    // if (matchCommand.matched) {
-    //   setUserInput("");
-    //   setPromptHints([]);
-    //   matchCommand.invoke();
-    //   return;
-    // }
-    setIsLoading(true);
-    chatStore.onUserInput(userInput).then(() => setIsLoading(false));
+    
+    // TODO: isLoading 버그 
+    // setIsLoading(true);
+    enableKeyboard(false);
+
+    // chatStore.onUserInput(userInput).then(() => { setIsLoading(false); enableKeyboard(true); }); 
+    // });
+    
+    // 포커스 제거하여 키보드 커서 없애기
+    (document.activeElement as HTMLElement).blur();
+
+    setUserInputStatus(UserInputCallbackStatus.None);
+
+    chatStore.onUserInput(userInput, (error, status) => {
+      setUserInputStatus(status);
+      if (error) {
+        console.log("[chat.tsx] doSubmit error: ", error);
+        // setIsLoading(false);
+        enableKeyboard(true);
+      } else {
+        console.log("[chat.tsx] doSubmit status: ", status);
+        if (status === UserInputCallbackStatus.Finish) {
+          // setIsLoading(false);
+          enableKeyboard(true);
+        }
+      }
+    });
+    
     localStorage.setItem(LAST_INPUT_KEY, userInput);
     setUserInput("");
     setPromptHints([]);
@@ -452,14 +477,15 @@ function _Chat() {
     ChatControllerPool.stop(session.id, messageId);
   };
 
-  const handleCheckCookie = () => {
+  const handleCheckSession = () => {
     if (useUserStore.getState().hasCookieValue()) {
       console.log("[chat.tsx] cookieValue is not empty");
       // for TEST
-      // handleResetUser();
-      // handleClearSessions();
-
-      enableKeyboard(false);
+      // 디버그 모드 체크
+      if (clientConfig?.debugMode) {
+        // handleResetUser();
+        // handleClearSessions();
+      }
 
       handleDeleteMessageBotWelcomeBack();
       handleDeleteMessageBotLongTime();
@@ -468,12 +494,14 @@ function _Chat() {
         // 20턴 이하, 당일
         console.log("[chat.tsx] isUnder20Turn() && isLastMessageToday()");
         sendMessageWelcomeBack(getUserName());
+        visibleKeyboard(true);
         enableKeyboard(true);
       } else if (isUnder20Turn() && !isLastMessageToday()) {
         // 20턴 이하, 다음날
         console.log("[chat.tsx] isUnder20Turn() && !isLastMessageToday()");
         // TODO: '오늘' 컴포넌트 출력
         sendMessageWelcomeLongTime(getUserName());
+        visibleKeyboard(true);
         enableKeyboard(true);
       } else if (isOver20Turn()) {
         // 20턴 넘어갔다면
@@ -481,16 +509,27 @@ function _Chat() {
         // TODO: '오늘' 컴포넌트 출력
         sendMessageWelcomeLongTime(getUserName());
         handleStartConversation();
+        visibleKeyboard(true);
+        enableKeyboard(true);
+      } else if (isZeroCount()) {
+        handleResetUser();
+        handleClearSessions();
+
+        sendMessageWelcomeLongTime(getUserName());
+        handleStartConversation();
+        visibleKeyboard(true);
         enableKeyboard(true);
       }
+      
       setTimeout(() => {
         scrollToBottom();
+        setAutoScroll(true);
       }, 500);
     } else {
       // 쿠키 정보 없음
       console.log("[chat.tsx] cookieValue is empty");
-      enableKeyboard(false);
       visibleKeyboard(false);
+      enableKeyboard(false);
       handleClearSessions();
       handleSendMessageHello();
       sendMessageAskGender();
@@ -564,6 +603,9 @@ function _Chat() {
     } else {
       console.log("[chat.tsx] registerUser is empty cookie");
 
+      setIsLoadingStartConversation(true);
+      visibleKeyboard(true);
+
       const userName = getUserName();
       const gender = useUserStore.getState().gender;
 
@@ -572,6 +614,8 @@ function _Chat() {
         .registerUser(userName, gender, (error, userId, cookieValue) => {
           if (error) {
             console.log("[chat.tsx] registerUser error: ", error);
+            setIsLoadingStartConversation(false);
+            enableKeyboard(false);
           } else {
             console.log(
               "[chat.tsx] registerUser success userId: ",
@@ -587,11 +631,14 @@ function _Chat() {
     console.log("[chat.tsx] startConversation-1");
     if (useUserStore.getState().hasCookieValue()) {
       console.log("[chat.tsx] startConversation-2");
+
       useUserStore
         .getState()
         .startConversation((error, conversationId, greeting, startTime) => {
           if (error) {
             console.log("[chat.tsx] startConversation error: ", error);
+            setIsLoadingStartConversation(false);
+            enableKeyboard(false);
           } else {
             console.log(
               "[chat.tsx] startConversation success conversationId: ",
@@ -601,8 +648,11 @@ function _Chat() {
                 " startTime: " +
                 startTime,
             );
+            
+            setIsLoadingStartConversation(false);
             visibleKeyboard(true);
             enableKeyboard(true);
+
             useUserStore.getState().setConversationStateInProgress();
           }
         });
@@ -715,6 +765,17 @@ function _Chat() {
     console.log("[chat.tsx] isOver20Turn isOver20Turn: ", isOver20Turn);
 
     return isOver20Turn;
+  };
+
+  // 카운트가 제로 이하라면
+  const isZeroCount = () => {
+    const userMessageCount = getUserMessageCount();
+    const isZeroCount = userMessageCount <= 0;
+
+    console.log("[chat.tsx] isZeroCount userMessageCount: ", userMessageCount);
+    console.log("[chat.tsx] isZeroCount isZeroCount: ", isZeroCount);
+
+    return isZeroCount;
   };
 
   const getLastMessage = () => {
@@ -1049,7 +1110,7 @@ function _Chat() {
   const accessStore = useAccessStore();
 
   useEffect(() => {
-    handleCheckCookie();
+    handleCheckSession();
   }, []);
 
   useEffect(() => {
@@ -1164,43 +1225,6 @@ function _Chat() {
         }
       });
     },
-    // getSubTitleForUserMessageCount: (text) => {
-    //   if (accessStore.disableFastLink) return;
-
-    //   try {
-    //     const payload = JSON.parse(text) as {
-    //       key?: string;
-    //       url?: string;
-    //     };
-
-    //     console.log(
-    //       "[Command] got getSubTitleForUserMessageCount from url: ",
-    //       payload,
-    //     );
-
-    //     if (payload.key || payload.url) {
-    //       showConfirm(
-    //         Locale.URLCommand.getSubTitleForUserMessageCount +
-    //           `\n${JSON.stringify(payload, null, 4)}`,
-    //       ).then((res) => {
-    //         if (!res) return;
-    //         if (payload.key) {
-    //           accessStore.update(
-    //             (access) => (access.openaiApiKey = payload.key!),
-    //           );
-    //         }
-    //         if (payload.url) {
-    //           accessStore.update((access) => (access.openaiUrl = payload.url!));
-    //         }
-    //       });
-    //     }
-    //   } catch {
-    //     console.error(
-    //       "[Command] failed to get getSubTitleForUserMessageCount from url: ",
-    //       text,
-    //     );
-    //   }
-    // },
   });
 
   // edit / insert message modal
@@ -1352,11 +1376,11 @@ function _Chat() {
                   {/* 메시지 말풍선 */}
                   <div className={styles["chat-message-item"]}>
                     <Markdown
-                      content={message.content}
+                      content={message.content ? message.content : "보키는 생각할 시간이 필요해요!"}
                       loading={
                         (message.preview || message.streaming) &&
                         message.content.length === 0 &&
-                        !isUser
+                        !isUser && userInputStatus === UserInputCallbackStatus.Progress
                       }
                       onContextMenu={(e) => onRightClick(e, message)}
                       onDoubleClickCapture={() => {
@@ -1367,6 +1391,7 @@ function _Chat() {
                       fontSize={fontSize}
                       parentRef={scrollRef}
                       defaultShow={i >= messages.length - 6}
+                      isUserText={isUser}
                     />
                   </div>
 
@@ -1390,48 +1415,60 @@ function _Chat() {
       </div>
 
       {/* 입력창 */}
-      {isShowKeyboard && (
-        <div className={styles["chat-input-panel"]}>
-          <div className={styles["chat-input-panel-inner"]}>
-            <textarea
-              ref={inputRef}
-              className={`${styles["chat-input"]} ${
-                !isEnabledKeyboard ? styles["disabled-input"] : ""
-              }`}
-              placeholder={getPlaceholder()}
-              onInput={(e) => onInput(e.currentTarget.value)}
-              value={userInput}
-              onKeyDown={onInputKeyDown}
-              onFocus={scrollToBottom}
-              onClick={scrollToBottom}
-              rows={inputRows}
-              autoFocus={autoFocus}
-              style={{
-                fontSize: config.fontSize,
-              }}
-            />
-            <IconButton
-              icon={<SendWhiteIcon />}
-              // text={Locale.Chat.Send}
-              text=""
-              className={`${styles["chat-input-send"]} ${
-                !isEnabledKeyboard ? styles["disabled-input"] : ""
-              }`}
-              type={null}
-              onClick={() => doSubmit(userInput)}
-            />
-          </div>
-
-          <div className={styles["label-chatgpt"]}>
-            <p className={styles["chatgpt"]}>
-              인공지능 답변은 ChatGPT 기반이며, 정확하지 않은 답변으로
-              <br />
-              생각되면 사실 여부를 한번 더 체크해 보세요.
-            </p>
-          </div>
+      { isLoadingStartConversation ? (
+        <Skeleton
+        className={styles["chat-input"]}
+        style={{
+          width: "100%",
+          height: "100%",
+          borderRadius: "0px",
+          backgroundColor: "#F2F2F2",
+        }}
+      />
+      ) : 
+      isShowKeyboard && (
+      <div className={styles["chat-input-panel"]}>
+        <div className={styles["chat-input-panel-inner"]}>
+          <textarea
+            ref={inputRef}
+            className={`${styles["chat-input"]} ${
+              !isEnabledKeyboard ? styles["disabled-input"] : ""
+            }`}
+            placeholder={getPlaceholder()}
+            onInput={(e) => onInput(e.currentTarget.value)}
+            value={userInput}
+            onKeyDown={onInputKeyDown}
+            onFocus={scrollToBottom}
+            onClick={scrollToBottom}
+            rows={inputRows}
+            autoFocus={autoFocus}
+            style={{
+              fontSize: config.fontSize,
+            }}
+          />
+          <IconButton
+            icon={<SendWhiteIcon />}
+            // text={Locale.Chat.Send}
+            text=""
+            className={`${styles["chat-input-send"]} ${
+              !isEnabledKeyboard ? styles["disabled-input"] : ""
+            }`}
+            type={null}
+            onClick={() => doSubmit(userInput)}
+          />
         </div>
-      )}
 
+        <div className={styles["label-chatgpt"]}>
+          <p className={styles["chatgpt"]}>
+            보키는 인공지능 기반 챗봇으로 부정확한 정보를 표시할 수 있습니다.
+          </p>
+        </div>
+      </div>
+      )
+      }
+        
+      {/* )} */}
+      {/* TODO: go */}
       {/* 우상단 버튼 이벤트 */}
       {/* {showExport && (
         <ExportMessageModal onClose={() => setShowExport(false)} />

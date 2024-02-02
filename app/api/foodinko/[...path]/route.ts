@@ -5,6 +5,7 @@ async function handle(
   req: NextRequest,
   { params }: { params: { path: string[] } },
 ) {
+
   console.log("[Foodinko Route] params ", params);
 
   if (req.method === "OPTIONS") {
@@ -15,17 +16,15 @@ async function handle(
 
   const serverConfig = getServerSideConfig();
 
-  // let baseUrl = serverConfig.foodinkoUrl || "";
-  //let baseUrl = "http://3.26.233.124";
-  let baseUrl = "https://api-boki.foodinko.com";
+  let baseUrl = serverConfig.foodinkoUrl || "";
 
-  // if (!baseUrl.startsWith("http")) {
-  //   baseUrl = `https://${baseUrl}`;
-  // }
+  if (!baseUrl.startsWith("http")) {
+    baseUrl = `https://${baseUrl}`;
+  }
 
-  // if (baseUrl.endsWith("/")) {
-  //   baseUrl = baseUrl.slice(0, -1);
-  // }
+  if (baseUrl.endsWith("/")) {
+    baseUrl = baseUrl.slice(0, -1);
+  }
 
   console.log("[Foodinko Route] Base Url: ", baseUrl);
   console.log("[Foodinko Route] params.path: ", params.path);

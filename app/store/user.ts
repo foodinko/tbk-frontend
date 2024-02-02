@@ -59,6 +59,7 @@ export type RegisterUserCallback = (
   userId?: number,
   cookieValue?: string,
 ) => void;
+
 export type StartConversationCallback = (
   error: Error | null,
   conversationId?: number,

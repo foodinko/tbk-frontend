@@ -41,7 +41,8 @@
     "spark-md5": "^3.0.2",
     "use-debounce": "^9.0.4",
     "zustand": "^4.3.8",
-    "moment": "^2.29.1"
+    "moment": "^2.29.1",
+    "react-loading-skeleton": "^3.4.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "1.5.7",

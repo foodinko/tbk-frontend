@@ -111,6 +111,19 @@ export const BOT_WELCOME_LONG_TIME: (userName: string) => ChatMessage = (userNam
   });
 };
 
+export enum UserInputCallbackStatus {
+  None = "None",
+  Error = "Error",
+  Progress = "Progress",
+  Update = "Update",
+  Finish = "Finish",
+}
+
+export type UserInputCallback = (
+  error: Error | null,
+  status: UserInputCallbackStatus,
+) => void;
+
 function createEmptySession(): ChatSession {
   return {
     id: nanoid(),
@@ -315,7 +328,10 @@ export const useChatStore = createPersistStore(
         // get().summarizeSession();
       },
 
-      async onUserInput(content: string) {
+      async onUserInput(content: string, callback?: UserInputCallback) {
+        
+        callback && callback(null, UserInputCallbackStatus.Progress);
+
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
 
@@ -395,6 +411,8 @@ export const useChatStore = createPersistStore(
             get().updateCurrentSession((session) => {
               session.messages = session.messages.concat();
             });
+
+            callback && callback(null, UserInputCallbackStatus.Update);
           },
           onFinish(message) {
             botMessage.streaming = false;
@@ -403,6 +421,8 @@ export const useChatStore = createPersistStore(
               get().onNewMessage(botMessage);
             }
             ChatControllerPool.remove(session.id, botMessage.id);
+
+            callback && callback(null, UserInputCallbackStatus.Finish);
           },
           onError(error) {
             const isAborted = error.message.includes("aborted");
@@ -424,6 +444,8 @@ export const useChatStore = createPersistStore(
             );
 
             console.error("[chat.ts] failed ", error);
+
+            callback && callback(error, UserInputCallbackStatus.Error);
           },
           onController(controller) {
             // collect controller for stop/retry

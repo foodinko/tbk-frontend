@@ -15,7 +15,7 @@ import {
 } from "@/app/store";
 
 import { ChatOptions, getHeaders, LLMApi, LLMModel, LLMUsage } from "../api";
-import { getServerSideConfig } from "@/app/config/server";
+import { getClientConfig } from "@/app/config/client";
 
 import Locale from "../../locales";
 import {
@@ -23,7 +23,6 @@ import {
   fetchEventSource,
 } from "@fortaine/fetch-event-source";
 import { prettyObject } from "@/app/utils/format";
-import { getClientConfig } from "@/app/config/client";
 import { makeAzurePath } from "@/app/azure";
 
 export interface FoodinkoListModelResponse {
@@ -39,19 +38,15 @@ export class FoodinkoApi implements LLMApi {
   private disableListModels = true;
 
   path(path: string): string {
-    const serverConfig = getServerSideConfig();
+    const clientConfig = getClientConfig();
 
-    // const baseUrl = process.env.MMW_TTBOKI_BACKEND_HOST;
-    // const baseUrl = serverConfig.foodinkoUrl || FOODINKO_BASE_URL;
-    // const baseUrl = FOODINKO_BASE_URL_DEV_LOCAL;
-    // const baseUrl = "http://3.26.233.124";
-    const baseUrl = "https://api-boki.foodinko.com";
-
+    const baseUrl = clientConfig?.foodinkoUrl || "";
     const completePath = [baseUrl, path].join("/");
 
-    console.log("[FoodinkoApi] serverConfig: ", serverConfig);
-    console.log("[FoodinkoApi] serverConfig.foodinkoUrl: ", serverConfig.foodinkoUrl);
-    console.log("[FoodinkoApi] complete path: ", completePath);
+    console.log("[foodinko.ts] clientConfig: ", clientConfig);
+    console.log("[foodinko.ts] baseUrl: ", baseUrl);
+    console.log("[foodinko.ts] path: ", path);
+    console.log("[foodinko.ts] completePath: ", completePath);
 
     return completePath;
   }
@@ -70,7 +65,7 @@ export class FoodinkoApi implements LLMApi {
     //   "content": "hi!!"
     // }
 
-    console.log("[FoodinkoApi] lastMessage: ", lastMessage);
+    console.log("[foodinko.ts] lastMessage: ", lastMessage);
 
     const requestPayload = {
       conversation_id: useUserStore.getState().conversationId,
@@ -78,7 +73,7 @@ export class FoodinkoApi implements LLMApi {
       user_message: lastMessage[0].content,
     };
 
-    console.log("[FoodinkoApi] Request foodinko payload: ", requestPayload);
+    console.log("[foodinko.ts] Request foodinko payload: ", requestPayload);
 
     let errored = false;
     const error = (e: any) => {
@@ -104,9 +99,9 @@ export class FoodinkoApi implements LLMApi {
         REQUEST_TIMEOUT_MS,
       );
 
-      console.log("[FoodinkoApi] fetch start");
-      console.log("[FoodinkoApi] fetch start chatPath: ", chatPath);
-      console.log("[FoodinkoApi] fetch start chatPayload: ", chatPayload);
+      console.log("[foodinko.ts] fetch start");
+      console.log("[foodinko.ts] fetch start chatPath: ", chatPath);
+      console.log("[foodinko.ts] fetch start chatPayload: ", chatPayload);
 
       if (shouldStream) {
         let responseText = "";
@@ -135,8 +130,8 @@ export class FoodinkoApi implements LLMApi {
             return;
           }
 
-          // console.log("[FoodinkoApi] responseText: ", responseText);
-          // console.log("[FoodinkoApi] remainText: ", remainText);
+          // console.log("[foodinko.ts] responseText: ", responseText);
+          // console.log("[foodinko.ts] remainText: ", remainText);
 
           if (remainText.length > 0) {
             const fetchCount = Math.max(1, Math.round(remainText.length / 60));
@@ -154,7 +149,7 @@ export class FoodinkoApi implements LLMApi {
         animateResponseText();
         fetch(streamChatPath, chatPayload)
           .then((response) => {
-            console.log("[FoodinkoApi] response: " + response);
+            console.log("[foodinko.ts] response: " + response);
 
             const reader = response?.body?.getReader();
             const decoder = new TextDecoder();
@@ -165,7 +160,7 @@ export class FoodinkoApi implements LLMApi {
               value,
             }): Promise<any> {
               if (done) {
-                console.log("[FoodinkoApi] Stream complete");
+                console.log("[foodinko.ts] Stream complete");
                 // options.onFinish(responseText + remainText);
                 finished = true;
                 return Promise.resolve();
@@ -173,31 +168,31 @@ export class FoodinkoApi implements LLMApi {
 
               partialData += decoder.decode(value, { stream: true });
 
-              console.log("[FoodinkoApi] partialData: ", partialData);
+              console.log("[foodinko.ts] partialData: ", partialData);
 
               try {
                 let data = partialData;
 
-                console.log("[FoodinkoApi] data: ", data);
+                console.log("[foodinko.ts] data: ", data);
 
                 const textArray = data.trim().split(" ");
 
-                console.log("[FoodinkoApi] textArray: ", textArray);
-                console.log("[FoodinkoApi] existingTexts: ", existingTexts);
+                console.log("[foodinko.ts] textArray: ", textArray);
+                console.log("[foodinko.ts] existingTexts: ", existingTexts);
 
                 if (textArray.length > existingTexts.length) {
                   const deltaArray = textArray.slice(existingTexts.length);
                   existingTexts = textArray;
                   remainText += deltaArray.join("") + " ";
 
-                  console.log("[FoodinkoApi] deltaArray: ", deltaArray);
-                  console.log("[FoodinkoApi] existingTexts: ", existingTexts);
-                  console.log("[FoodinkoApi] remainText: ", remainText);
+                  console.log("[foodinko.ts] deltaArray: ", deltaArray);
+                  console.log("[foodinko.ts] existingTexts: ", existingTexts);
+                  console.log("[foodinko.ts] remainText: ", remainText);
                 }
               } catch (e) {
                 errored = true;
                 console.log(
-                  "[FoodinkoApi] Response Animation error: ",
+                  "[foodinko.ts] Response Animation error: ",
                   e,
                   partialData,
                 );
@@ -209,18 +204,18 @@ export class FoodinkoApi implements LLMApi {
           })
           .catch((e) => {
             errored = true;
-            console.error("[FoodinkoApi] Error:", e);
+            console.error("[foodinko.ts] Error:", e);
             error(e);
           });
       } else {
         const res = await fetch(chatPath, chatPayload);
         clearTimeout(requestTimeoutId);
 
-        console.log("[FoodinkoApi] Response-res: ", res);
+        console.log("[foodinko.ts] Response-res: ", res);
 
         const resJson = await res.json();
 
-        console.log("[FoodinkoApi] Response-resJson: ", resJson);
+        console.log("[foodinko.ts] Response-resJson: ", resJson);
 
         const message = this.extractMessage(resJson);
 

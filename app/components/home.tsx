@@ -35,7 +35,7 @@ export function Loading(props: { noLogo?: boolean }) {
   return (
     <div className={styles["loading-content"] + " no-dark"}>
       {!props.noLogo && <BotIcon />}
-      <LoadingIcon />
+      {/* <LoadingIcon /> */}
     </div>
   );
 }
@@ -63,11 +63,16 @@ export function useSwitchTheme() {
     document.body.classList.remove("light");
     document.body.classList.remove("dark");
 
-    if (config.theme === "dark") {
-      document.body.classList.add("dark");
-    } else if (config.theme === "light") {
+    console.log("[home.tsx] config.theme: " + config.theme + " length: " + config.theme.length);
+
+    // if (config.theme === "dark") {
+    //   document.body.classList.add("dark");
+    // } else if (config.theme === "light") {
+    //   document.body.classList.add("light");
+    // } else {
+      // 조건절 매칭이 안됨. 여기로 들어오게 되어 있음.
       document.body.classList.add("light");
-    }
+    // }
 
     const metaDescriptionDark = document.querySelector(
       'meta[name="theme-color"][media*="dark"]',
@@ -76,14 +81,14 @@ export function useSwitchTheme() {
       'meta[name="theme-color"][media*="light"]',
     );
 
-    if (config.theme === "auto") {
-      metaDescriptionDark?.setAttribute("content", "#151515");
-      metaDescriptionLight?.setAttribute("content", "#fafafa");
-    } else {
-      const themeColor = getCSSVar("--theme-color");
-      metaDescriptionDark?.setAttribute("content", themeColor);
-      metaDescriptionLight?.setAttribute("content", themeColor);
-    }
+    // if (config.theme === "auto") {
+      // metaDescriptionDark?.setAttribute("content", "#151515");
+      metaDescriptionLight?.setAttribute("content", "#F9F9F9");
+    // } else {
+    //   const themeColor = getCSSVar("--theme-color");
+    //   metaDescriptionDark?.setAttribute("content", themeColor);
+    //   metaDescriptionLight?.setAttribute("content", themeColor);
+    // }
   }, [config.theme]);
 }
 
@@ -146,15 +151,11 @@ function Screen() {
       }
     >
         <>
-          {/* <SideBar className={isHome ? styles["sidebar-show"] : ""} /> */}
+          <SideBar className="" />
 
           <div className={styles["window-content"]} id={SlotID.AppBody}>
             <Routes>
               <Route path={Path.Home} element={<Chat />} />
-              {/* <Route path={Path.NewChat} element={<NewChat />} /> */}
-              {/* <Route path={Path.Masks} element={<MaskPage />} /> */}
-              {/* <Route path={Path.Chat} element={<Chat />} /> */}
-              {/* <Route path={Path.Settings} element={<Settings />} /> */}
             </Routes>
           </div>
         </>

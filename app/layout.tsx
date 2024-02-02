@@ -18,8 +18,8 @@ export const metadata: Metadata = {
     maximumScale: 1,
   },
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
-    { media: "(prefers-color-scheme: dark)", color: "#151515" },
+    { media: "(prefers-color-scheme: light)", color: "#F9F9F9" },
+    // { media: "(prefers-color-scheme: dark)", color: "#151515" },
   ],
   appleWebApp: {
     title: "BOKI",

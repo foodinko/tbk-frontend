@@ -396,8 +396,7 @@
 }
 
 .chat-message-user > .chat-message-container > .chat-message-item {
-  // background-color: #EA4927;
-  // color: white !important;
+  background-color: #EA4926;
 
   &:hover {
     min-width: 0;
@@ -496,7 +495,7 @@
 .chat-input {
   height: 100%;
   width: 100%;
-  border-radius: 10px;
+  border-radius: 22px;
   border: var(--border-in-light);
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.03);
   background-color: var(--white);
@@ -516,10 +515,11 @@
 .chat-input-send {
   background-color: #EA4927;
   color: white;
+  border-radius: 16px;
 
   position: absolute;
   right: 30px;
-  bottom: 103px;
+  bottom: 86px;
 }
 
 @media only screen and (max-width: 600px) {
@@ -528,7 +528,7 @@
   }
 
   .chat-input-send {
-    bottom: 92px;
+    bottom: 74px;
   }
 }
 

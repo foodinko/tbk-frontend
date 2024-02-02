@@ -191,14 +191,20 @@ export function Markdown(
     parentRef?: RefObject<HTMLDivElement>;
     defaultShow?: boolean;
     onLinkClick: any;
+    isUserText?: boolean;
   } & React.DOMAttributes<HTMLDivElement>,
 ) {
+
   const mdRef = useRef<HTMLDivElement>(null);
+  
+  const { isUserText } = props;
+  const textColorStyle = isUserText ? { color: 'white' } : {};
 
   return (
     <div
       className="markdown-body"
       style={{
+        ...textColorStyle,
         fontSize: `${props.fontSize ?? 14}px`,
       }}
       ref={mdRef}

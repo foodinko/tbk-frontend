@@ -14,7 +14,7 @@ export const OPENAI_BASE_URL = "https://api.openai.com";
 
 export const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/";
 
-export const FOODINKO_BASE_URL = "http://3.26.233.124";
+export const FOODINKO_BASE_URL = `${process.env.MMW_TTBOKI_BACKEND_HOST}`;
 export const FOODINKO_BASE_URL_DEV = "http://3.26.233.124";
 export const FOODINKO_BASE_URL_DEV_LOCAL = "http://localhost:8000";
 

@@ -28,12 +28,12 @@ export enum Theme {
 export const DEFAULT_CONFIG = {
   lastUpdate: Date.now(), // timestamp, to merge state
 
-  submitKey: isMacOS() ? SubmitKey.MetaEnter : SubmitKey.CtrlEnter,
+  submitKey: SubmitKey.Enter,
   avatar: "1f603",
   fontSize: 14,
   fontColorEnabled: "#111111",
   fontColorDisabled: "#222222", // opacity 30%
-  theme: Theme.Auto as Theme,
+  theme: Theme.Light as Theme,
   tightBorder: !!getClientConfig()?.isApp,
   sendPreviewBubble: true,
   enableAutoGenerateTitle: true,

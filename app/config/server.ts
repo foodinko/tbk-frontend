@@ -33,6 +33,7 @@ declare global {
 
       // tbk only
       MMW_TTBOKI_BACKEND_HOST?: string;
+      DEBUG_MODE?: string;
     }
   }
 }
@@ -53,11 +54,11 @@ const ACCESS_CODES = (function getAccessCodes(): Set<string> {
 export const getServerSideConfig = () => {
   if (typeof process === "undefined") {
     throw Error(
-      "[Server Config] you are importing a nodejs-only module outside of nodejs",
+      "[server.ts] you are importing a nodejs-only module outside of nodejs",
     );
   }
 
-  // console.log("[Server Config] process.env: ", JSON.stringify(process.env));
+  console.log("[server.ts] process.env: ", JSON.stringify(process.env));
 
   const disableGPT4 = !!process.env.DISABLE_GPT4;
   let customModels = process.env.CUSTOM_MODELS ?? "";
@@ -77,7 +78,7 @@ export const getServerSideConfig = () => {
   const randomIndex = Math.floor(Math.random() * apiKeys.length);
   const apiKey = apiKeys[randomIndex];
   console.log(
-    `[Server Config] using ${randomIndex + 1} of ${apiKeys.length} api key`,
+    `[server.ts] using ${randomIndex + 1} of ${apiKeys.length} api key`,
   );
 
   return {
@@ -95,6 +96,7 @@ export const getServerSideConfig = () => {
     googleUrl: process.env.GOOGLE_URL,
 
     foodinkoUrl: process.env.MMW_TTBOKI_BACKEND_HOST,
+    debugMode: process.env.DEBUG_MODE,
 
     needCode: ACCESS_CODES.size > 0,
     code: process.env.CODE,
