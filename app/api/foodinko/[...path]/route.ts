@@ -14,17 +14,19 @@ async function handle(
 
   const controller = new AbortController();
 
-  const serverConfig = getServerSideConfig();
+  // const serverConfig = getServerSideConfig();
 
-  let baseUrl = serverConfig.foodinkoUrl || "";
+  // let baseUrl = serverConfig.foodinkoUrl || "";
 
-  if (!baseUrl.startsWith("http")) {
-    baseUrl = `https://${baseUrl}`;
-  }
+  // if (!baseUrl.startsWith("http")) {
+  //   baseUrl = `https://${baseUrl}`;
+  // }
 
-  if (baseUrl.endsWith("/")) {
-    baseUrl = baseUrl.slice(0, -1);
-  }
+  // if (baseUrl.endsWith("/")) {
+  //   baseUrl = baseUrl.slice(0, -1);
+  // }
+  
+  const baseUrl = "https://api-boki.foodinko.com";
 
   console.log("[Foodinko Route] Base Url: ", baseUrl);
   console.log("[Foodinko Route] params.path: ", params.path);
