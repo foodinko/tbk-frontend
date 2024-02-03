@@ -335,7 +335,7 @@ export const useChatStore = createPersistStore(
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
 
-        console.log("[chat.ts] session: " + stringify(session));
+        // console.log("[chat.ts] session: " + stringify(session));
         console.log("[chat.ts] model config: " + stringify(modelConfig));
 
 
