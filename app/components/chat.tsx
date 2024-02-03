@@ -442,6 +442,8 @@ function _Chat() {
         console.log("[chat.tsx] doSubmit error: ", error);
         // setIsLoading(false);
         enableKeyboard(true);
+
+        // TODO: 오류 발생하면 초기화?
       } else {
         console.log("[chat.tsx] doSubmit status: ", status);
         if (status === SendMessageCallbackStatus.Finish) {
@@ -481,6 +483,14 @@ function _Chat() {
     ChatControllerPool.stop(session.id, messageId);
   };
 
+  const handleFetchUserInfo = () => {
+    // useUserStore.getState().registerUser("테오1112", "남성");  // for test
+    // console.log("[home.tsx] handleFetchUserInfo cookie value: " + useUserStore.getState().cookieValue);
+    if (useUserStore.getState().hasCookieValue()) {
+      
+    }
+  };
+
   const handleCheckSession = () => {
     
     handleDeleteMessageBotWelcomeBack();
@@ -496,51 +506,67 @@ function _Chat() {
       //   handleClearSessions();
       // }
 
-      if (isUnder20Turn() && isLastMessageToday()) {
-        // 20턴 이하, 당일
-        console.log("[chat.tsx] handleCheckSession 20턴 이하, 당일");
-        sendMessageWelcomeBack(getUserName());
-        visibleKeyboard(true);
-        enableKeyboard(true);
-      } else if (isUnder20Turn() && !isLastMessageToday()) {
-        // 20턴 이하, 다음날
-        console.log("[chat.tsx] handleCheckSession 20턴 이하, 다음날");
-        // TODO: '오늘' 컴포넌트 출력
-        sendMessageWelcomeLongTime(getUserName());
-        visibleKeyboard(true);
-        enableKeyboard(true);
-      } else if (isOver20Turn()) {
-        // 20턴 넘어갔다면
-        console.log("[chat.tsx] handleCheckSession 20턴 이상");
-        // TODO: '오늘' 컴포넌트 출력
-        sendMessageWelcomeLongTime(getUserName());
-        visibleKeyboard(true);
-        enableKeyboard(false);
-        handleStartConversation();
-      } else if (!isLastMessageToday()) {
-        // 당일이 아니라면
-        console.log("[chat.tsx] handleCheckSession 턴수 관계없이, 당일 아님");
-        // TODO: '오늘' 컴포넌트 출력
-        sendMessageWelcomeLongTime(getUserName());
-        visibleKeyboard(true);
-        enableKeyboard(false);
-        handleStartConversation();
-      }
-      // else if (isUnderZeroMessageCount()) {
-      //   console.log("[chat.tsx] handleCheckSession 메시지 개수가 0개 미만");
-      //   handleResetUser();
-      //   handleClearSessions();
+      setIsLoadingStartConversation(true);
+      visibleKeyboard(true);
 
-      //   sendMessageWelcomeLongTime(getUserName());
-      //   visibleKeyboard(true);
-      //   enableKeyboard(false);
-      //   handleStartConversation();
-      // }
-      
-      setTimeout(() => {
-        scrollToBottom();
-        setAutoScroll(true);
-      }, 500);
+      useUserStore.getState().fetchUserInfo(useUserStore.getState().cookieValue, (error: any) => {
+        if (error) {
+          console.log("[chat.tsx] handleCheckSession fetchUserInfo error: ", error);
+          setIsLoadingStartConversation(false);
+          visibleKeyboard(true);
+          enableKeyboard(false);
+        } else {
+          console.log("[chat.tsx] handleCheckSession fetchUserInfo success: ");
+
+          setIsLoadingStartConversation(false);
+
+          if (isUnder20Turn() && isLastMessageToday()) {
+            // 20턴 이하, 당일
+            console.log("[chat.tsx] handleCheckSession 20턴 이하, 당일");
+            sendMessageWelcomeBack(getUserName());
+            visibleKeyboard(true);
+            enableKeyboard(true);
+          } else if (isUnder20Turn() && !isLastMessageToday()) {
+            // 20턴 이하, 다음날
+            console.log("[chat.tsx] handleCheckSession 20턴 이하, 다음날");
+            // TODO: '오늘' 컴포넌트 출력
+            sendMessageWelcomeLongTime(getUserName());
+            visibleKeyboard(true);
+            enableKeyboard(true);
+          } else if (isOver20Turn()) {
+            // 20턴 넘어갔다면
+            console.log("[chat.tsx] handleCheckSession 20턴 이상");
+            // TODO: '오늘' 컴포넌트 출력
+            sendMessageWelcomeLongTime(getUserName());
+            visibleKeyboard(true);
+            enableKeyboard(false);
+            handleStartConversation();
+          } else if (!isLastMessageToday()) {
+            // 당일이 아니라면
+            console.log("[chat.tsx] handleCheckSession 턴수 관계없이, 당일 아님");
+            // TODO: '오늘' 컴포넌트 출력
+            sendMessageWelcomeLongTime(getUserName());
+            visibleKeyboard(true);
+            enableKeyboard(false);
+            handleStartConversation();
+          }
+          // else if (isUnderZeroMessageCount()) {
+          //   console.log("[chat.tsx] handleCheckSession 메시지 개수가 0개 미만");
+          //   handleResetUser();
+          //   handleClearSessions();
+    
+          //   sendMessageWelcomeLongTime(getUserName());
+          //   visibleKeyboard(true);
+          //   enableKeyboard(false);
+          //   handleStartConversation();
+          // }
+          
+          setTimeout(() => {
+            scrollToBottom();
+            setAutoScroll(true);
+          }, 500);
+        }
+      });
     } else {
       // 쿠키 정보 없음
       console.log("[chat.tsx] cookieValue is empty");

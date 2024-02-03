@@ -60,6 +60,10 @@ export type RegisterUserCallback = (
   cookieValue?: string,
 ) => void;
 
+export type FetchUserCallback = (
+  error: Error | null,
+) => void;
+
 export type StartConversationCallback = (
   error: Error | null,
   conversationId?: number,
@@ -191,7 +195,7 @@ export const useUserStore = createPersistStore(
         });
     },
 
-    async fetchUserInfo(cookieValue: string) {
+    async fetchUserInfo(cookieValue: string, callback: FetchUserCallback) {
       if (fetchState > FETCH_STATE_NOT_STARTED) return;
       fetchState = FETCH_STATE_FETCHING;
 
@@ -224,6 +228,7 @@ export const useUserStore = createPersistStore(
           const { gender, name, user_id } = res;
 
           set({ gender: gender, userName: name, userId: user_id });
+          callback(null);
 
           console.log(
             "[user.ts] fetchUserInfo gender: " +
@@ -238,6 +243,8 @@ export const useUserStore = createPersistStore(
           console.log("[user.ts] fetchUserInfo err: ", err);
 
           fetchState = FETCH_STATE_NOT_STARTED;
+
+          callback(err);
 
           console.log(
             "[user.ts] fetchUserInfo gender: " +
