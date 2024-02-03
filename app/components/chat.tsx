@@ -651,8 +651,16 @@ function _Chat() {
         .registerUser(userName, gender, (error, userId, cookieValue) => {
           if (error) {
             console.log("[chat.tsx] registerUser error: ", error);
+
+            // 등록 시 오류이면 초기화
             setIsLoadingStartConversation(false);
+            visibleKeyboard(false);
             enableKeyboard(false);
+            handleClearSessions();
+            handleSendMessageHello();
+            setTimeout(() => {
+              sendMessageAskGender();
+            }, 600);
           } else {
             console.log(
               "[chat.tsx] registerUser success userId: ",
@@ -679,8 +687,15 @@ function _Chat() {
         .startConversation((error, conversationId, greeting, startTime) => {
           if (error) {
             console.log("[chat.tsx] startConversation error: ", error);
+            // 대화 시작 시 오류이면 초기화
             setIsLoadingStartConversation(false);
+            visibleKeyboard(false);
             enableKeyboard(false);
+            handleClearSessions();
+            handleSendMessageHello();
+            setTimeout(() => {
+              sendMessageAskGender();
+            }, 600);
           } else {
             console.log(
               "[chat.tsx] startConversation success conversationId: ",
