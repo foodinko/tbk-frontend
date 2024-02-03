@@ -56,7 +56,7 @@ import {
   BOT_EMPTY_COUNT,
   BOT_WELCOME_BACK,
   BOT_WELCOME_LONG_TIME,
-  UserInputCallbackStatus,
+  SendMessageCallbackStatus,
 } from "../store";
 
 import {
@@ -133,6 +133,9 @@ function useSubmitHandler() {
   }, []);
 
   const shouldSubmit = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+
+    console.log("[chat.tsx] shouldSubmit event: ", e);
+
     if (e.key !== "Enter") return false;
     if (e.key === "Enter" && (e.nativeEvent.isComposing || isComposing.current))
       return false;
@@ -350,7 +353,7 @@ function _Chat() {
   const [hitBottom, setHitBottom] = useState(true);
   const isMobileScreen = useMobileScreen();
   const navigate = useNavigate();
-  const [userInputStatus, setUserInputStatus] = useState<UserInputCallbackStatus>(UserInputCallbackStatus.None);
+  const [sendMessageStatus, setSendMessageStatus] = useState<SendMessageCallbackStatus>(SendMessageCallbackStatus.None);
 
   // prompt hints
   const promptStore = usePromptStore();
@@ -431,19 +434,20 @@ function _Chat() {
     // 포커스 제거하여 키보드 커서 없애기
     (document.activeElement as HTMLElement).blur();
 
-    setUserInputStatus(UserInputCallbackStatus.None);
+    setSendMessageStatus(SendMessageCallbackStatus.None);
 
     chatStore.onUserInput(userInput, (error, status) => {
-      setUserInputStatus(status);
+      setSendMessageStatus(status);
       if (error) {
         console.log("[chat.tsx] doSubmit error: ", error);
         // setIsLoading(false);
         enableKeyboard(true);
       } else {
         console.log("[chat.tsx] doSubmit status: ", status);
-        if (status === UserInputCallbackStatus.Finish) {
+        if (status === SendMessageCallbackStatus.Finish) {
           // setIsLoading(false);
-          enableKeyboard(true);
+          // enableKeyboard(true);
+          handleCheckTurn();
         }
       }
     });
@@ -478,48 +482,60 @@ function _Chat() {
   };
 
   const handleCheckSession = () => {
+    
+    handleDeleteMessageBotWelcomeBack();
+    handleDeleteMessageBotLongTime();
+
     if (useUserStore.getState().hasCookieValue()) {
-      console.log("[chat.tsx] cookieValue is not empty");
+      console.log("[chat.tsx] handleCheckSession cookieValue is not empty");
+
       // for TEST
       // 디버그 모드 체크
-      if (clientConfig?.debugMode) {
-        // handleResetUser();
-        // handleClearSessions();
-      }
-
-      handleDeleteMessageBotWelcomeBack();
-      handleDeleteMessageBotLongTime();
+      // if (clientConfig?.debugMode) {
+      //   handleResetUser();
+      //   handleClearSessions();
+      // }
 
       if (isUnder20Turn() && isLastMessageToday()) {
         // 20턴 이하, 당일
-        console.log("[chat.tsx] isUnder20Turn() && isLastMessageToday()");
+        console.log("[chat.tsx] handleCheckSession 20턴 이하, 당일");
         sendMessageWelcomeBack(getUserName());
         visibleKeyboard(true);
         enableKeyboard(true);
       } else if (isUnder20Turn() && !isLastMessageToday()) {
         // 20턴 이하, 다음날
-        console.log("[chat.tsx] isUnder20Turn() && !isLastMessageToday()");
+        console.log("[chat.tsx] handleCheckSession 20턴 이하, 다음날");
         // TODO: '오늘' 컴포넌트 출력
         sendMessageWelcomeLongTime(getUserName());
         visibleKeyboard(true);
         enableKeyboard(true);
       } else if (isOver20Turn()) {
         // 20턴 넘어갔다면
-        console.log("[chat.tsx] isOver20Turn()");
+        console.log("[chat.tsx] handleCheckSession 20턴 이상");
         // TODO: '오늘' 컴포넌트 출력
         sendMessageWelcomeLongTime(getUserName());
-        handleStartConversation();
         visibleKeyboard(true);
-        enableKeyboard(true);
-      } else if (isZeroCount()) {
-        handleResetUser();
-        handleClearSessions();
-
+        enableKeyboard(false);
+        handleStartConversation();
+      } else if (!isLastMessageToday()) {
+        // 당일이 아니라면
+        console.log("[chat.tsx] handleCheckSession 턴수 관계없이, 당일 아님");
+        // TODO: '오늘' 컴포넌트 출력
         sendMessageWelcomeLongTime(getUserName());
-        handleStartConversation();
         visibleKeyboard(true);
-        enableKeyboard(true);
+        enableKeyboard(false);
+        handleStartConversation();
       }
+      // else if (isUnderZeroMessageCount()) {
+      //   console.log("[chat.tsx] handleCheckSession 메시지 개수가 0개 미만");
+      //   handleResetUser();
+      //   handleClearSessions();
+
+      //   sendMessageWelcomeLongTime(getUserName());
+      //   visibleKeyboard(true);
+      //   enableKeyboard(false);
+      //   handleStartConversation();
+      // }
       
       setTimeout(() => {
         scrollToBottom();
@@ -532,8 +548,9 @@ function _Chat() {
       enableKeyboard(false);
       handleClearSessions();
       handleSendMessageHello();
-      sendMessageAskGender();
-      visibleChatGender(true);
+      setTimeout(() => {
+        sendMessageAskGender();
+      }, 600);
     }
   };
 
@@ -547,14 +564,34 @@ function _Chat() {
       getUserMessageCount(),
     );
 
+    // 대화 중이고 20턴 이상일 때
     if (isOver20Turn() && useUserStore.getState().isConversationStateInProgress() ) {
-      console.log("[chat.tsx] isOver20Turn");
-      enableKeyboard(false);
-      sendMessageEmptyCount(getUserName());
-      sendMessageSmartStoreLink();
-      handleSmartStoreLinkProvided();
-      sendMessageSeeYouAgain();
-      handleFinishConversation();
+      console.log("[chat.tsx] sendMessageStatus: ", sendMessageStatus);
+      console.log("[chat.tsx] handleCheckTurn isOver20Turn");
+
+      if (sendMessageStatus === SendMessageCallbackStatus.None) {
+        enableKeyboard(false);
+
+        handleFinishConversation();
+
+        setTimeout(() => {
+          sendMessageEmptyCount(getUserName());
+        }, 600);
+
+        setTimeout(() => {
+          sendMessageSmartStoreLink();
+        }, 1200);
+
+        setTimeout(() => {
+          handleSmartStoreLinkProvided();
+        }, 1800);
+
+        setTimeout(() => {
+          sendMessageSeeYouAgain();
+        }, 2400);
+      }
+    } else if (isUnder20Turn()) {
+      enableKeyboard(true);
     }
   };
 
@@ -632,6 +669,11 @@ function _Chat() {
     if (useUserStore.getState().hasCookieValue()) {
       console.log("[chat.tsx] startConversation-2");
 
+      setIsLoadingStartConversation(true);
+
+      setSendMessageStatus(SendMessageCallbackStatus.None);
+      useUserStore.getState().setConversationStateFinished();
+
       useUserStore
         .getState()
         .startConversation((error, conversationId, greeting, startTime) => {
@@ -667,7 +709,7 @@ function _Chat() {
 
   const handleLinkClicked = () => {
     console.log("[chat.tsx] handleLinkClicked");
-    // TODO: 클릭 이벤트 API 호출
+    // TODO: 링크 클릭 이벤트 API 호출
     // TODO: 콜백 함수에서 handleStartConversation() 호출
     if (!useUserStore.getState().isConversationStateInProgress()) { 
       handleStartConversation();
@@ -677,6 +719,7 @@ function _Chat() {
   };
 
   const handleFinishConversation = () => {
+    setSendMessageStatus(SendMessageCallbackStatus.None);
     useUserStore.getState().setConversationStateFinished();
     // TODO: 대화 종료 API 호출
   };
@@ -690,8 +733,10 @@ function _Chat() {
     );
     visibleChatGender(false);
     sendMessageSelectGender(gender);
-    sendMessageAskName();
-    visibleChatUser(true);
+    setTimeout(() => {
+      sendMessageAskName();
+    }, 600);
+    scrollToBottom();
   };
 
   const handleButtonClickUserName = (userName: string) => {
@@ -768,14 +813,14 @@ function _Chat() {
   };
 
   // 카운트가 제로 이하라면
-  const isZeroCount = () => {
+  const isUnderZeroMessageCount = () => {
     const userMessageCount = getUserMessageCount();
-    const isZeroCount = userMessageCount <= 0;
+    const isUnderZeroMessageCount = userMessageCount < 0;
 
-    console.log("[chat.tsx] isZeroCount userMessageCount: ", userMessageCount);
-    console.log("[chat.tsx] isZeroCount isZeroCount: ", isZeroCount);
+    console.log("[chat.tsx] isUnderZeroMessageCount userMessageCount: ", userMessageCount);
+    console.log("[chat.tsx] isUnderZeroMessageCount isUnderZeroMessageCount: ", isUnderZeroMessageCount);
 
-    return isZeroCount;
+    return isUnderZeroMessageCount;
   };
 
   const getLastMessage = () => {
@@ -878,7 +923,23 @@ function _Chat() {
 
     console.log("[chat.tsx] sendMessageAskGender: ", content);
 
-    sendChatbotMessage(content);
+    // sendChatbotMessage(content);
+
+    chatStore.onSendChatbotMessage(content, (error, status) => {
+      if (error) {
+        console.log("[chat.tsx] sendMessageAskGender error: ", error);
+      } else {
+        console.log("[chat.tsx] sendMessageAskGender status: ", status);
+        if (status === SendMessageCallbackStatus.Finish) {
+          visibleChatGender(true);
+        }
+      }
+    });
+
+    console.log(
+      "[chat.tsx] sendChatbotMessage session.messages.length: " +
+        session.messages.length,
+    );
   };
 
   const sendMessageSelectGender = (gender: string) => {
@@ -894,7 +955,20 @@ function _Chat() {
 
     console.log("[chat.tsx] sendMessageAskName: ", content);
 
-    sendChatbotMessage(content);
+    // sendChatbotMessage(content);
+
+    chatStore.onSendChatbotMessage(content, (error, status) => {
+      if (error) {
+        console.log("[chat.tsx] sendMessageAskName error: ", error);
+      } else {
+        console.log("[chat.tsx] sendMessageAskName status: ", status);
+        if (status === SendMessageCallbackStatus.Finish) {
+          setTimeout(() => {
+            visibleChatUser(true);
+          }, 200);
+        }
+      }
+    });
   };
 
   const sendMessageSelectUserName = (userName: string) => {
@@ -1037,73 +1111,6 @@ function _Chat() {
     deleteMessage(msgId);
   };
 
-  const onResend = (message: ChatMessage) => {
-    // when it is resending a message
-    // 1. for a user's message, find the next bot response
-    // 2. for a bot's message, find the last user's input
-    // 3. delete original user input and bot's message
-    // 4. resend the user's input
-
-    const resendingIndex = session.messages.findIndex(
-      (m) => m.id === message.id,
-    );
-
-    if (resendingIndex < 0 || resendingIndex >= session.messages.length) {
-      console.error("[Chat] failed to find resending message", message);
-      return;
-    }
-
-    let userMessage: ChatMessage | undefined;
-    let botMessage: ChatMessage | undefined;
-
-    if (message.role === "assistant") {
-      // if it is resending a bot's message, find the user input for it
-      botMessage = message;
-      for (let i = resendingIndex; i >= 0; i -= 1) {
-        if (session.messages[i].role === "user") {
-          userMessage = session.messages[i];
-          break;
-        }
-      }
-    } else if (message.role === "user") {
-      // if it is resending a user's input, find the bot's response
-      userMessage = message;
-      for (let i = resendingIndex; i < session.messages.length; i += 1) {
-        if (session.messages[i].role === "assistant") {
-          botMessage = session.messages[i];
-          break;
-        }
-      }
-    }
-
-    if (userMessage === undefined) {
-      console.error("[Chat] failed to resend", message);
-      return;
-    }
-
-    // delete the original messages
-    deleteMessage(userMessage.id);
-    deleteMessage(botMessage?.id);
-
-    // resend the message
-    setIsLoading(true);
-    chatStore.onUserInput(userMessage.content).then(() => setIsLoading(false));
-    inputRef.current?.focus();
-  };
-
-  const onPinMessage = (message: ChatMessage) => {
-    chatStore.updateCurrentSession((session) =>
-      session.mask.context.push(message),
-    );
-
-    showToast(Locale.Chat.Actions.PinToastContent, {
-      text: Locale.Chat.Actions.PinToastAction,
-      onClick: () => {
-        setShowPromptModal(true);
-      },
-    });
-  };
-
   const context: RenderMessage[] = useMemo(() => {
     return session.mask.hideContext ? [] : session.mask.context.slice();
   }, [session.mask.context, session.mask.hideContext]);
@@ -1113,9 +1120,9 @@ function _Chat() {
     handleCheckSession();
   }, []);
 
-  useEffect(() => {
-    handleCheckTurn();
-  }, [session.messages.length]);
+  // useEffect(() => {
+  //   handleCheckTurn();
+  // }, [session.messages.length]);
 
   // preview messages
   const renderMessages = useMemo(() => {
@@ -1125,7 +1132,7 @@ function _Chat() {
             {
               ...createMessage({
                 role: "assistant",
-                content: "……",
+                content: "보키는 생각할 시간이 필요해요!",
               }),
               preview: true,
             },
@@ -1380,7 +1387,7 @@ function _Chat() {
                       loading={
                         (message.preview || message.streaming) &&
                         message.content.length === 0 &&
-                        !isUser && userInputStatus === UserInputCallbackStatus.Progress
+                        !isUser && sendMessageStatus === SendMessageCallbackStatus.Progress
                       }
                       onContextMenu={(e) => onRightClick(e, message)}
                       onDoubleClickCapture={() => {
@@ -1468,7 +1475,7 @@ function _Chat() {
       }
         
       {/* )} */}
-      {/* TODO: go */}
+      {/* TODO: 공유 팝업  */}
       {/* 우상단 버튼 이벤트 */}
       {/* {showExport && (
         <ExportMessageModal onClose={() => setShowExport(false)} />

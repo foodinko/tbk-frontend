@@ -12,7 +12,7 @@ import { GeminiProApi } from "./platforms/google";
 export const ROLES = ["system", "user", "user-settings", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
 
-export const Models = ["gpt-3.5-turbo", "gpt-4"] as const;
+export const Models = ["foodinko-tbk", "gpt-3.5-turbo", "gpt-4"] as const;
 export type ChatModel = ModelType;
 
 export interface RequestMessage {
@@ -62,7 +62,7 @@ export abstract class LLMApi {
   abstract models(): Promise<LLMModel[]>;
 }
 
-type ProviderName = "openai" | "azure" | "claude" | "palm";
+type ProviderName = "openai" | "azure" | "claude" | "palm" | "foodinko";
 
 interface Model {
   name: string;
@@ -86,15 +86,16 @@ interface ChatProvider {
 export class ClientApi {
   public llm: LLMApi;
 
-  constructor(provider: ModelProvider = ModelProvider.GPT) {
+  constructor(provider: ModelProvider = ModelProvider.FoodinkoTbk) {
     if (provider === ModelProvider.FoodinkoTbk) {
       this.llm = new FoodinkoApi();
       return;
     } else if (provider === ModelProvider.GeminiPro) {
       this.llm = new GeminiProApi();
       return;
+    } else {
+      this.llm = new ChatGPTApi();
     }
-    this.llm = new ChatGPTApi();
   }
 
   config() {}

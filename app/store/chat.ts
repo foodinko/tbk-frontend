@@ -111,7 +111,7 @@ export const BOT_WELCOME_LONG_TIME: (userName: string) => ChatMessage = (userNam
   });
 };
 
-export enum UserInputCallbackStatus {
+export enum SendMessageCallbackStatus {
   None = "None",
   Error = "Error",
   Progress = "Progress",
@@ -119,9 +119,9 @@ export enum UserInputCallbackStatus {
   Finish = "Finish",
 }
 
-export type UserInputCallback = (
+export type SendMessageCallback = (
   error: Error | null,
-  status: UserInputCallbackStatus,
+  status: SendMessageCallbackStatus,
 ) => void;
 
 function createEmptySession(): ChatSession {
@@ -328,14 +328,16 @@ export const useChatStore = createPersistStore(
         // get().summarizeSession();
       },
 
-      async onUserInput(content: string, callback?: UserInputCallback) {
+      async onUserInput(content: string, callback?: SendMessageCallback) {
         
-        callback && callback(null, UserInputCallbackStatus.Progress);
+        callback && callback(null, SendMessageCallbackStatus.Progress);
 
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
 
+        console.log("[chat.ts] session: " + stringify(session));
         console.log("[chat.ts] model config: " + stringify(modelConfig));
+
 
         const userContent = fillTemplateWith(content, modelConfig);
         console.log("[chat.ts] after template: ", userContent);
@@ -412,7 +414,7 @@ export const useChatStore = createPersistStore(
               session.messages = session.messages.concat();
             });
 
-            callback && callback(null, UserInputCallbackStatus.Update);
+            callback && callback(null, SendMessageCallbackStatus.Update);
           },
           onFinish(message) {
             botMessage.streaming = false;
@@ -422,7 +424,7 @@ export const useChatStore = createPersistStore(
             }
             ChatControllerPool.remove(session.id, botMessage.id);
 
-            callback && callback(null, UserInputCallbackStatus.Finish);
+            callback && callback(null, SendMessageCallbackStatus.Finish);
           },
           onError(error) {
             const isAborted = error.message.includes("aborted");
@@ -445,7 +447,7 @@ export const useChatStore = createPersistStore(
 
             console.error("[chat.ts] failed ", error);
 
-            callback && callback(error, UserInputCallbackStatus.Error);
+            callback && callback(error, SendMessageCallbackStatus.Error);
           },
           onController(controller) {
             // collect controller for stop/retry
@@ -458,7 +460,9 @@ export const useChatStore = createPersistStore(
         });
       },
 
-      onSendUserMessage(content: string) {
+      onSendUserMessage(content: string, callback?: SendMessageCallback) {
+        callback && callback(null, SendMessageCallbackStatus.Progress);
+
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
         const userContent = fillTemplateWith(content, modelConfig);
@@ -469,17 +473,16 @@ export const useChatStore = createPersistStore(
           role: "user-settings",
           content: userContent,
         });
-        content;
+        
         get().updateCurrentSession((session) => {
-          // const savedMessage = {
-          //   ...userMessage,
-          //   content,
-          // };
           session.messages = session.messages.concat([userMessage]);
+          setTimeout(() => {
+            callback && callback(null, SendMessageCallbackStatus.Finish);
+          }, 500);
         });
       },
 
-      onSendChatbotMessage(content: string) {
+      onSendChatbotMessage(content: string, callback?: SendMessageCallback) {
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
         const userContent = fillTemplateWith(content, modelConfig);
@@ -493,6 +496,9 @@ export const useChatStore = createPersistStore(
 
         get().updateCurrentSession((session) => {
           session.messages = session.messages.concat([botMessage]);
+          setTimeout(() => {
+            callback && callback(null, SendMessageCallbackStatus.Finish);
+          }, 500);
         });
       },
 
@@ -615,114 +621,6 @@ export const useChatStore = createPersistStore(
           session.memoryPrompt = "";
         });
       },
-
-      // summarizeSession() {
-      //   const config = useAppConfig.getState();
-      //   const session = get().currentSession();
-      //   const modelConfig = session.mask.modelConfig;
-
-      //   console.log("[chat.ts] summarizeSession() modelConfig.model: ", modelConfig.model);
-      //   var api: ClientApi;
-      //   if (modelConfig.model === "foodinko-tbk") {
-      //     api = new ClientApi(ModelProvider.FoodinkoTbk);
-      //   } else if (modelConfig.model === "gemini-pro") {
-      //     api = new ClientApi(ModelProvider.GeminiPro);
-      //   } else {
-      //     api = new ClientApi(ModelProvider.GPT);
-      //   }
-
-      //   // remove error messages if any
-      //   const messages = session.messages;
-
-      //   // should summarize topic after chating more than 50 words
-      //   const SUMMARIZE_MIN_LEN = 50;
-      //   if (
-      //     config.enableAutoGenerateTitle &&
-      //     session.topic === DEFAULT_TOPIC &&
-      //     countMessages(messages) >= SUMMARIZE_MIN_LEN
-      //   ) {
-      //     const topicMessages = messages.concat(
-      //       createMessage({
-      //         role: "user",
-      //         content: Locale.Store.Prompt.Topic,
-      //       }),
-      //     );
-      //     api.llm.chat({
-      //       messages: topicMessages,
-      //       config: {
-      //         model: getSummarizeModel(session.mask.modelConfig.model),
-      //       },
-      //       onFinish(message) {
-      //         get().updateCurrentSession(
-      //           (session) =>
-      //             (session.topic =
-      //               message.length > 0 ? trimTopic(message) : DEFAULT_TOPIC),
-      //         );
-      //       },
-      //     });
-      //   }
-      //   const summarizeIndex = Math.max(
-      //     session.lastSummarizeIndex,
-      //     session.clearContextIndex ?? 0,
-      //   );
-      //   let toBeSummarizedMsgs = messages
-      //     .filter((msg) => !msg.isError)
-      //     .slice(summarizeIndex);
-
-      //   const historyMsgLength = countMessages(toBeSummarizedMsgs);
-
-      //   if (historyMsgLength > modelConfig?.max_tokens ?? 4000) {
-      //     const n = toBeSummarizedMsgs.length;
-      //     toBeSummarizedMsgs = toBeSummarizedMsgs.slice(
-      //       Math.max(0, n - modelConfig.historyMessageCount),
-      //     );
-      //   }
-
-      //   // add memory prompt
-      //   toBeSummarizedMsgs.unshift(get().getMemoryPrompt());
-
-      //   const lastSummarizeIndex = session.messages.length;
-
-      //   console.log(
-      //     "[Chat History] ",
-      //     toBeSummarizedMsgs,
-      //     historyMsgLength,
-      //     modelConfig.compressMessageLengthThreshold,
-      //   );
-
-      //   if (
-      //     historyMsgLength > modelConfig.compressMessageLengthThreshold &&
-      //     modelConfig.sendMemory
-      //   ) {
-      //     api.llm.chat({
-      //       messages: toBeSummarizedMsgs.concat(
-      //         createMessage({
-      //           role: "system",
-      //           content: Locale.Store.Prompt.Summarize,
-      //           date: "",
-      //         }),
-      //       ),
-      //       config: {
-      //         ...modelConfig,
-      //         stream: true,
-      //         model: getSummarizeModel(session.mask.modelConfig.model),
-      //       },
-      //       onUpdate(message) {
-      //         session.memoryPrompt = message;
-      //       },
-      //       onFinish(message) {
-      //         console.log("[Memory] ", message);
-      //         get().updateCurrentSession((session) => {
-      //           session.lastSummarizeIndex = lastSummarizeIndex;
-      //           session.memoryPrompt = message; // Update the memory prompt for stored it in local storage
-      //         });
-      //       },
-      //       onError(err) {
-      //         console.error("[Summarize] ", err);
-      //       },
-      //     });
-      //   }
-      // },
 
       updateStat(message: ChatMessage) {
         get().updateCurrentSession((session) => {

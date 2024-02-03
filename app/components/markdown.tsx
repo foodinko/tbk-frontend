@@ -199,12 +199,14 @@ export function Markdown(
   
   const { isUserText } = props;
   const textColorStyle = isUserText ? { color: 'white' } : {};
+  const backgroundColorStyle = isUserText ? { backgroundColor: '#EA4927' } : { backgroundColor: '#F2F2F2' };
 
   return (
     <div
       className="markdown-body"
       style={{
         ...textColorStyle,
+        ...backgroundColorStyle,
         fontSize: `${props.fontSize ?? 14}px`,
       }}
       ref={mdRef}

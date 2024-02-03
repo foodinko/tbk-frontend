@@ -1,3 +1,5 @@
+@import "../styles/animation.scss";
+
 .chat-gender {
   align-items: center;
   background-color: white;
@@ -10,6 +12,7 @@
   cursor: pointer;
   margin-right: 5px;
   top: 22px;
+  animation: slide-in 0.5s ease-out;
 }
 
 .active {

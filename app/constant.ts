@@ -201,7 +201,7 @@ export const DEFAULT_MODELS = [
   },
   {
     name: "gpt-3.5-turbo",
-    available: true,
+    available: false,
     provider: {
       id: "openai",
       providerName: "OpenAI",

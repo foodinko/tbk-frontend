@@ -195,6 +195,8 @@ export const useUserStore = createPersistStore(
       if (fetchState > FETCH_STATE_NOT_STARTED) return;
       fetchState = FETCH_STATE_FETCHING;
 
+      console.log("[user.ts] fetchUserInfo start");
+
       const path =
         "/api/foodinko/user/authenticate_user" +
         (cookieValue ? `/${cookieValue}` : "");
@@ -208,7 +210,7 @@ export const useUserStore = createPersistStore(
       })
         .then((res: Response) => {
           if (res.ok) {
-            console.log("[user.ts] user.fetchUserInfo res: Response ", res);
+            console.log("[user.ts] fetchUserInfo res: Response ", res);
             return res.json();
           } else {
             throw new Error(res.statusText);
@@ -245,7 +247,9 @@ export const useUserStore = createPersistStore(
               ", userId: " +
               get().userId,
           );
+          
           this.resetUser();
+          
           console.log(
             "[user.ts] fetchUserInfo gender: " +
               get().gender +
@@ -262,8 +266,9 @@ export const useUserStore = createPersistStore(
 
     async startConversation(callback: StartConversationCallback) {
       if (fetchState > FETCH_STATE_NOT_STARTED) return;
-
       fetchState = FETCH_STATE_FETCHING;
+
+      console.log("[user.ts] startConversation start");
 
       const controller = new AbortController();
       const path = "/api/foodinko/chat/start_conversation";
