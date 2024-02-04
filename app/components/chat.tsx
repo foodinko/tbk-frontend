@@ -106,6 +106,10 @@ import { useAllModels } from "../utils/hooks";
 import Skeleton from "react-loading-skeleton";
 import 'react-loading-skeleton/dist/skeleton.css';
 
+import { ShareBox } from "./share";
+
+import Image from "next/image";
+
 const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
 });
@@ -339,6 +343,7 @@ function _Chat() {
   const fontSize = config.fontSize;
 
   const [showExport, setShowExport] = useState(false);
+  const [showShareBox, setShowShareBox] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [userInput, setUserInput] = useState("");
@@ -808,6 +813,26 @@ function _Chat() {
     // 2. LLM에서 제공하는 스마트 스토어 링크
     // 3. LLM에서 제공하는 추천 가게 링크
     handleLinkClicked();
+  };
+
+  const handleShareBoxClose = () => {
+    setShowShareBox(false);
+  };
+
+  const handleShareBoxKakao = () => {
+    setShowShareBox(false);
+  };
+
+  const handleShareBoxInstagram = () => {
+    setShowShareBox(false);
+  };
+
+  const handleShareBoxCopyUrl = () => {
+    setShowShareBox(false);
+  };
+
+  const handleShareBoxMore = () => {
+    setShowShareBox(false);
   };
 
   const getPlaceholder = () => {
@@ -1296,232 +1321,213 @@ function _Chat() {
   }, []);
 
   return (
-    <div className={styles.chat} key={session.id}>
-      <div className="window-header" data-tauri-drag-region>
-        {isMobileScreen && (
-          <div className="window-actions">
-            <div className={"window-action-button"}>
-              {/* <IconButton
-                icon={<ReturnIcon />}
-                bordered
-                title={Locale.Chat.Actions.ChatList}
-                onClick={() => navigate(Path.Home)}
-              /> */}
+      <div className={styles.chat} key={session.id}>
+        <div className="window-header" data-tauri-drag-region>
+          {isMobileScreen && (
+            <div className="window-actions">
+              <div className={"window-action-button"}>
+                {/* <IconButton
+                  icon={<ReturnIcon />}
+                  bordered
+                  title={Locale.Chat.Actions.ChatList}
+                  onClick={() => navigate(Path.Home)}
+                /> */}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <div className={`window-header-title ${styles["chat-body-title"]}`}>
-          <div
-            className={`window-header-main-title ${styles["chat-body-main-title"]}`}
-            onClickCapture={() => setIsEditingMessage(true)}
-          >
-            {/* {!session.topic ? DEFAULT_TOPIC : session.topic} */}
-            {DEFAULT_TOPIC}
-          </div>
-          <div className="window-header-sub-title">
-            {getSubTitleForUserMessageCountCustom()}
-          </div>
-        </div>
-        <div className="window-actions">
-          {/* {!isMobileScreen && (
-            <div className="window-action-button">
-              <IconButton
-                icon={<RenameIcon />}
-                bordered
-                onClick={() => setIsEditingMessage(true)}
-              />
+          <div className={`window-header-title ${styles["chat-body-title"]}`}>
+            <div
+              className={`window-header-main-title ${styles["chat-body-main-title"]}`}
+              onClickCapture={() => setIsEditingMessage(true)}
+            >
+              {/* {!session.topic ? DEFAULT_TOPIC : session.topic} */}
+              {DEFAULT_TOPIC}
             </div>
-          )} */}
-          {/* <div className="window-action-button">
-            <IconButton
-              icon={<ExportIcon />}
-              bordered
-              // title={Locale.Chat.Actions.Export}
-              onClick={() => {
-                // setShowExport(true);
-              }}
-            />
-          </div> */}
-          {/* {showMaxIcon && (
+            <div className="window-header-sub-title">
+              {getSubTitleForUserMessageCountCustom()}
+            </div>
+          </div>
+          <div className="window-actions">
+            {/* 우상단 버튼 */}
             <div className="window-action-button">
-              <IconButton
-                icon={config.tightBorder ? <MinIcon /> : <MaxIcon />}
+              {/* <IconButton
+                icon={<ExportIcon />}
                 bordered
                 onClick={() => {
-                  config.update(
-                    (config) => (config.tightBorder = !config.tightBorder),
-                  );
+                  setShowShareBox(true);
+                }}
+              /> */}
+              <Image 
+                // className="icon"
+                alt="Image"
+                src="/images/btn-share.png"
+                width={24}
+                height={24}
+                onClick={() => {
+                  setShowShareBox(true);
                 }}
               />
             </div>
-          )} */}
+          </div>
         </div>
-      </div>
 
-      {/* chat body */}
-      <div
-        className={styles["chat-body"]}
-        ref={scrollRef}
-        onScroll={(e) => onChatBodyScroll(e.currentTarget)}
-        onMouseDown={() => inputRef.current?.blur()}
-        onTouchStart={() => {
-          inputRef.current?.blur();
-          setAutoScroll(false);
-        }}
-      >
-        {messages.map((message, i) => {
-          const isUser =
-            message.role === "user" || message.role === "user-settings";
-          const isContext = i < context.length;
-          const showActions =
-            i > 0 &&
-            !(message.preview || message.content.length === 0) &&
-            !isContext;
-          const showTyping = message.preview || message.streaming;
+        {/* chat body */}
+        <div
+          className={styles["chat-body"]}
+          ref={scrollRef}
+          onScroll={(e) => onChatBodyScroll(e.currentTarget)}
+          onMouseDown={() => inputRef.current?.blur()}
+          onTouchStart={() => {
+            inputRef.current?.blur();
+            setAutoScroll(false);
+          }}
+        >
+          {messages.map((message, i) => {
+            const isUser =
+              message.role === "user" || message.role === "user-settings";
+            const isContext = i < context.length;
+            const showActions =
+              i > 0 &&
+              !(message.preview || message.content.length === 0) &&
+              !isContext;
+            const showTyping = message.preview || message.streaming;
 
-          const shouldShowClearContextDivider = i === clearContextIndex - 1;
+            const shouldShowClearContextDivider = i === clearContextIndex - 1;
 
-          return (
-            <Fragment key={message.id}>
-              <div
-                className={
-                  isUser ? styles["chat-message-user"] : styles["chat-message"]
-                }
-              >
-                <div className={styles["chat-message-container"]}>
-                  <div className={styles["chat-message-header"]}>
-                    {/* 아바타(캐릭터) 아이콘 */}
-                    <div className={styles["chat-message-avatar"]}>
-                      <> {/* 말풍선 유저 아이콘 */} </>
-                      {isUser ? (
-                        <></> /*<Avatar avatar={config.avatar} />*/
-                      ) : (
-                        <>
-                          {/* 말풍선 챗봇 아이콘 */}
-                          {["system"].includes(message.role) ? (
-                            <Avatar avatar="2699-fe0f" />
-                          ) : (
-                            <MaskAvatar
-                              avatar={session.mask.avatar}
-                              model={
-                                message.model || session.mask.modelConfig.model
-                              }
-                            />
-                          )}
-                        </>
-                      )}
+            return (
+              <Fragment key={message.id}>
+                <div
+                  className={
+                    isUser ? styles["chat-message-user"] : styles["chat-message"]
+                  }
+                >
+                  <div className={styles["chat-message-container"]}>
+                    <div className={styles["chat-message-header"]}>
+                      {/* 아바타(캐릭터) 아이콘 */}
+                      <div className={styles["chat-message-avatar"]}>
+                        <> {/* 말풍선 유저 아이콘 */} </>
+                        {isUser ? (
+                          <></> /*<Avatar avatar={config.avatar} />*/
+                        ) : (
+                          <>
+                            {/* 말풍선 챗봇 아이콘 */}
+                            {["system"].includes(message.role) ? (
+                              <Avatar avatar="2699-fe0f" />
+                            ) : (
+                              <MaskAvatar
+                                avatar={session.mask.avatar}
+                                model={
+                                  message.model || session.mask.modelConfig.model
+                                }
+                              />
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* 입력중... 텍스트 */}
-                  {/* {showTyping && (
-                    <div className={styles["chat-message-status"]}>
-                      {Locale.Chat.Typing}
+                    {/* 메시지 말풍선 */}
+                    <div className={styles["chat-message-item"]}>
+                      <Markdown
+                        content={message.content ? message.content : "보키는 생각할 시간이 필요해요!"}
+                        loading={
+                          (message.preview || message.streaming) &&
+                          message.content.length === 0 &&
+                          !isUser && sendMessageStatus === SendMessageCallbackStatus.Progress
+                        }
+                        onContextMenu={(e) => onRightClick(e, message)}
+                        onDoubleClickCapture={() => {
+                          if (!isMobileScreen) return;
+                          setUserInput(message.content);
+                        }}
+                        onLinkClick={handleLinkClick}
+                        fontSize={fontSize}
+                        parentRef={scrollRef}
+                        defaultShow={i >= messages.length - 6}
+                        isUserText={isUser}
+                      />
                     </div>
-                  )} */}
 
-                  {/* 메시지 말풍선 */}
-                  <div className={styles["chat-message-item"]}>
-                    <Markdown
-                      content={message.content ? message.content : "보키는 생각할 시간이 필요해요!"}
-                      loading={
-                        (message.preview || message.streaming) &&
-                        message.content.length === 0 &&
-                        !isUser && sendMessageStatus === SendMessageCallbackStatus.Progress
-                      }
-                      onContextMenu={(e) => onRightClick(e, message)}
-                      onDoubleClickCapture={() => {
-                        if (!isMobileScreen) return;
-                        setUserInput(message.content);
-                      }}
-                      onLinkClick={handleLinkClick}
-                      fontSize={fontSize}
-                      parentRef={scrollRef}
-                      defaultShow={i >= messages.length - 6}
-                      isUserText={isUser}
-                    />
-                  </div>
-
-                  {/* 메시지 말풍선 아래 날짜 */}
-                  <div className={styles["chat-message-action-date"]}>
-                    {message.date.toLocaleString()}
+                    {/* 메시지 말풍선 아래 날짜 */}
+                    <div className={styles["chat-message-action-date"]}>
+                      {message.date.toLocaleString()}
+                    </div>
                   </div>
                 </div>
-              </div>
-              {shouldShowClearContextDivider && <ClearContextDivider />}
-            </Fragment>
-          );
-        })}
+                {shouldShowClearContextDivider && <ClearContextDivider />}
+              </Fragment>
+            );
+          })}
 
-        {isShowChatUser && (
-          <ChatUser onButtonClick={handleButtonClickUserName} />
-        )}
-        {isShowChatGender && (
-          <ChatGender onButtonClick={handleButtonClickGender} />
-        )}
-      </div>
-
-      {/* 입력창 */}
-      { isLoadingStartConversation ? (
-        <Skeleton
-        className={styles["chat-input"]}
-        style={{
-          width: "100%",
-          height: "100%",
-          borderRadius: "0px",
-          backgroundColor: "#F2F2F2",
-        }}
-      />
-      ) : 
-      isShowKeyboard && (
-      <div className={styles["chat-input-panel"]}>
-        <div className={styles["chat-input-panel-inner"]}>
-          <textarea
-            ref={inputRef}
-            className={`${styles["chat-input"]} ${
-              !isEnabledKeyboard ? styles["disabled-input"] : ""
-            }`}
-            placeholder={getPlaceholder()}
-            onInput={(e) => onInput(e.currentTarget.value)}
-            value={userInput}
-            onKeyDown={onInputKeyDown}
-            onFocus={scrollToBottom}
-            onClick={scrollToBottom}
-            rows={inputRows}
-            autoFocus={autoFocus}
-            style={{
-              fontSize: config.fontSize,
-            }}
-          />
-          <IconButton
-            icon={<SendWhiteIcon />}
-            // text={Locale.Chat.Send}
-            text=""
-            className={`${styles["chat-input-send"]} ${
-              !isEnabledKeyboard ? styles["disabled-input"] : ""
-            }`}
-            type={null}
-            onClick={() => doSubmit(userInput)}
-          />
+          {isShowChatUser && (
+            <ChatUser onButtonClick={handleButtonClickUserName} />
+          )}
+          {isShowChatGender && (
+            <ChatGender onButtonClick={handleButtonClickGender} />
+          )}
         </div>
 
-        <div className={styles["label-chatgpt"]}>
-          <p className={styles["chatgpt"]}>
-            보키는 인공지능 기반 챗봇으로 부정확한 정보를 표시할 수 있습니다.
-          </p>
+        {/* 입력창 */}
+        { isLoadingStartConversation ? (
+          <Skeleton
+          className={styles["chat-input"]}
+          style={{
+            width: "100%",
+            height: "100%",
+            borderRadius: "0px",
+            backgroundColor: "#F2F2F2",
+          }}
+        />
+        ) : 
+        isShowKeyboard && (
+        <div className={styles["chat-input-panel"]}>
+          <div className={styles["chat-input-panel-inner"]}>
+            <textarea
+              ref={inputRef}
+              className={`${styles["chat-input"]} ${
+                !isEnabledKeyboard ? styles["disabled-input"] : ""
+              }`}
+              placeholder={getPlaceholder()}
+              onInput={(e) => onInput(e.currentTarget.value)}
+              value={userInput}
+              onKeyDown={onInputKeyDown}
+              onFocus={scrollToBottom}
+              onClick={scrollToBottom}
+              rows={inputRows}
+              autoFocus={autoFocus}
+              style={{
+                fontSize: config.fontSize,
+              }}
+            />
+            <IconButton
+              icon={<SendWhiteIcon />}
+              text=""
+              className={`${styles["chat-input-send"]} ${
+                !isEnabledKeyboard ? styles["disabled-input"] : ""
+              }`}
+              type={null}
+              onClick={() => doSubmit(userInput)}
+            />
+          </div>
+
+          <div className={styles["label-chatgpt"]}>
+            <p className={styles["chatgpt"]}>
+              보키는 인공지능 기반 챗봇으로 부정확한 정보를 표시할 수 있습니다.
+            </p>
+          </div>
         </div>
+        )
+        }
+          
+        {/* 공유하기 팝업  */}
+        {/* {showExport && (
+          <ExportMessageModal onClose={() => setShowExport(false)} />
+        )} */}
+        { showShareBox && (
+          <ShareBox onClose={handleShareBoxClose} onKakao={handleShareBoxKakao} onInstagram={handleShareBoxInstagram} onCopyUrl={handleShareBoxCopyUrl} onMore={handleShareBoxMore} />
+        )}
       </div>
-      )
-      }
-        
-      {/* )} */}
-      {/* TODO: 공유 팝업  */}
-      {/* 우상단 버튼 이벤트 */}
-      {/* {showExport && (
-        <ExportMessageModal onClose={() => setShowExport(false)} />
-      )} */}
-    </div>
   );
 }
 

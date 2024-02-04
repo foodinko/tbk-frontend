@@ -1,0 +1,121 @@
+@import "../styles/animation.scss";
+
+.modal-container {
+  background-color: var(--white);
+  border-radius: 20px;
+  width: 292px;
+  animation: slide-in ease 0.3s;
+
+  --modal-padding: 20px;
+
+  &-max {
+    width: 95vw;
+    max-width: unset;
+    height: 95vh;
+    display: flex;
+    flex-direction: column;
+
+    .modal-content {
+      max-height: unset !important;
+      flex-grow: 1;
+    }
+  }
+
+  .modal-header {
+    display: flex;
+    flex-direction: column;
+    padding: var(--modal-padding);
+    display: flex;
+    justify-content: space-between;
+    // border-bottom: var(--border-in-light); 
+
+    .modal-header-actions {
+      order: 1;
+      align-self: flex-end;
+      display: flex;
+
+      .modal-header-action {
+        cursor: pointer;
+
+        &:not(:last-child) {
+          margin-right: 20px;
+        }
+
+        &:hover {
+          filter: brightness(1.2);
+        }
+      }
+
+      .modal-header-action img {
+        width: 20px;
+        height: 20px;
+        display: block; // 이미지 아래 불필요한 공백 제거
+      }
+    }
+
+    .modal-title {
+      order: 2;
+      align-self: center;
+      color: #222222;
+      font-size: 20px;
+      font-family: "Pretendard Variable";
+      font-weight: 800;
+      line-height: 24px;
+      word-wrap: break-word;
+      text-align: center;
+    }
+
+    .modal-subtitle {
+      order: 3;
+      margin-top: 4px;
+      align-self: center;
+      color: #999999;
+      font-size: 16px;
+      font-family: "Pretendard Variable";
+      font-weight: 500;
+      line-height: 24px;
+      word-wrap: break-word;
+      text-align: center;
+    }
+  }
+
+  .modal-content {
+    margin-top: 10px;
+    margin-left: 32px;
+    margin-right: 32px;
+    // margin-bottom: 20px;
+    // padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal-footer {
+    padding: var(--modal-padding);
+    display: flex;
+    justify-content: flex-end;
+    // border-top: var(--border-in-light);
+    // box-shadow: var(--shadow);
+
+    .modal-actions {
+      display: flex;
+      align-items: center;
+
+      .modal-action {
+        &:not(:last-child) {
+          margin-right: 20px;
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .modal-container {
+    .modal-content {
+      max-height: 50vh;
+    }
+  }
+}
