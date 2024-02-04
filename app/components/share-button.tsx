@@ -16,7 +16,8 @@ export const ShareButton = ({ title, image, onClick }: ShareButtonProps): JSX.El
 
   return (
     <div className={styles["shareButton"]} onClick={handleClick}>
-      <div className={styles["icon-share"]}>
+      {image && (
+        <div className={styles["icon-share"]}>
         <Image 
           className={styles["icon"]}
           alt="Image"
@@ -25,6 +26,7 @@ export const ShareButton = ({ title, image, onClick }: ShareButtonProps): JSX.El
           height={56}
         />
       </div>
+      )}
       <div className={styles["icon-share-label"]}>{title}</div>
     </div>
   );
