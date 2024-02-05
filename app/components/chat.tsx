@@ -518,8 +518,22 @@ function _Chat() {
         if (error) {
           console.log("[chat.tsx] handleCheckSession fetchUserInfo error: ", error);
           setIsLoadingStartConversation(false);
-          visibleKeyboard(true);
+          // visibleKeyboard(true);
+          // enableKeyboard(false);
+
+          visibleKeyboard(false);
           enableKeyboard(false);
+
+          handleResetUser();
+          handleClearSessions();
+          
+          setTimeout(() => {
+            handleSendMessageHello();
+          }, 600);
+          setTimeout(() => {
+            sendMessageAskGender();
+          }, 1200);
+
         } else {
           console.log("[chat.tsx] handleCheckSession fetchUserInfo success: ");
 
@@ -528,31 +542,38 @@ function _Chat() {
           if (isUnder20Turn() && isLastMessageToday()) {
             // 20턴 이하, 당일
             console.log("[chat.tsx] handleCheckSession 20턴 이하, 당일");
-            sendMessageWelcomeBack(getUserName());
+            
             visibleKeyboard(true);
-            enableKeyboard(true);
+            enableKeyboard(false);
+
+            sendMessageWelcomeBack(getUserName());
+            handleStartConversation();
           } else if (isUnder20Turn() && !isLastMessageToday()) {
             // 20턴 이하, 다음날
             console.log("[chat.tsx] handleCheckSession 20턴 이하, 다음날");
             // TODO: '오늘' 컴포넌트 출력
-            sendMessageWelcomeLongTime(getUserName());
             visibleKeyboard(true);
-            enableKeyboard(true);
+            enableKeyboard(false);
+
+            sendMessageWelcomeLongTime(getUserName());
+            handleStartConversation();
           } else if (isOver20Turn()) {
             // 20턴 넘어갔다면
             console.log("[chat.tsx] handleCheckSession 20턴 이상");
             // TODO: '오늘' 컴포넌트 출력
-            sendMessageWelcomeLongTime(getUserName());
             visibleKeyboard(true);
             enableKeyboard(false);
+
+            sendMessageWelcomeLongTime(getUserName());
             handleStartConversation();
           } else if (!isLastMessageToday()) {
             // 당일이 아니라면
             console.log("[chat.tsx] handleCheckSession 턴수 관계없이, 당일 아님");
             // TODO: '오늘' 컴포넌트 출력
-            sendMessageWelcomeLongTime(getUserName());
             visibleKeyboard(true);
             enableKeyboard(false);
+
+            sendMessageWelcomeLongTime(getUserName());
             handleStartConversation();
           }
           // else if (isUnderZeroMessageCount()) {
@@ -577,6 +598,8 @@ function _Chat() {
       console.log("[chat.tsx] cookieValue is empty");
       visibleKeyboard(false);
       enableKeyboard(false);
+
+      handleResetUser();
       handleClearSessions();
       handleSendMessageHello();
       setTimeout(() => {
@@ -736,8 +759,11 @@ function _Chat() {
                 " startTime: " +
                 startTime,
             );
-            
-            setIsLoadingStartConversation(false);
+
+            setTimeout(() => {
+              setIsLoadingStartConversation(false);
+            }, 500);
+
             visibleKeyboard(true);
             enableKeyboard(true);
 
@@ -1198,7 +1224,7 @@ function _Chat() {
             {
               ...createMessage({
                 role: "assistant",
-                content: "보키는 생각할 시간이 필요해요!",
+                content: "보키가 답변을 생성하지 못했어요.",
               }),
               preview: true,
             },
@@ -1430,7 +1456,7 @@ function _Chat() {
                     {/* 메시지 말풍선 */}
                     <div className={styles["chat-message-item"]}>
                       <Markdown
-                        content={message.content ? message.content : "보키는 생각할 시간이 필요해요!"}
+                        content={message.content ? message.content : "보키가 답변을 생성하지 못했어요."}
                         loading={
                           (message.preview || message.streaming) &&
                           message.content.length === 0 &&
@@ -1472,6 +1498,7 @@ function _Chat() {
         { isLoadingStartConversation ? (
           <Skeleton
           className={styles["chat-input"]}
+          count={2}
           style={{
             width: "100%",
             height: "100%",

@@ -428,18 +428,24 @@ export const useChatStore = createPersistStore(
           },
           onError(error) {
             const isAborted = error.message.includes("aborted");
-            botMessage.content +=
-              "\n\n" +
-              prettyObject({
-                error: true,
-                message: error.message,
-              });
+
+            // botMessage.content +=
+            //   "\n\n" +
+            //   prettyObject({
+            //     error: true,
+            //     message: error.message,
+            //   });
+            // TODO: 메시지 변경 필요
+            botMessage.content = "보키가 답변을 생성하지 못했어요.";
+
             botMessage.streaming = false;
             userMessage.isError = !isAborted;
             botMessage.isError = !isAborted;
+
             get().updateCurrentSession((session) => {
               session.messages = session.messages.concat();
             });
+            
             ChatControllerPool.remove(
               session.id,
               botMessage.id ?? messageIndex,

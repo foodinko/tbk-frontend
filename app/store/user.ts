@@ -1,4 +1,7 @@
-import { StoreKey } from "../constant";
+import { 
+  StoreKey,
+  USER_COOKIE_VALUE_KEY,
+} from "../constant";
 import { getHeaders } from "../client/api";
 import { createPersistStore } from "../utils/store";
 import { ensure } from "../utils/clone";
@@ -72,9 +75,11 @@ export type StartConversationCallback = (
 ) => void;
 
 export const useUserStore = createPersistStore(
-  { ...DEFAULT_USER_STATE },
+  // 초기값
+  DEFAULT_USER_STATE,
 
   (set, get) => ({
+
     resetUser: () => {
       set({ ...DEFAULT_USER_STATE });
     },
@@ -187,7 +192,7 @@ export const useUserStore = createPersistStore(
         .catch((err) => {
           console.log("[user.ts] registerUser err: ", err);
           fetchState = FETCH_STATE_NOT_STARTED;
-          this.resetUser();
+          // this.resetUser();
           callback(err);
         })
         .finally(() => {
@@ -245,26 +250,9 @@ export const useUserStore = createPersistStore(
           fetchState = FETCH_STATE_NOT_STARTED;
 
           callback(err);
-
-          console.log(
-            "[user.ts] fetchUserInfo gender: " +
-              get().gender +
-              ", userName: " +
-              get().userName +
-              ", userId: " +
-              get().userId,
-          );
           
-          this.resetUser();
-          
-          console.log(
-            "[user.ts] fetchUserInfo gender: " +
-              get().gender +
-              ", userName: " +
-              get().userName +
-              ", userId: " +
-              get().userId,
-          );
+          // FYI: 사용자 정보 조회 중 새로고침으로 중단되면 catch에 걸리고, 사용자 정보가 초기화됨
+          // this.resetUser();
         })
         .finally(() => {
           fetchState = FETCH_STATE_NOT_STARTED;
@@ -325,18 +313,43 @@ export const useUserStore = createPersistStore(
         });
     },
   }),
+
+  // persist
   {
     name: StoreKey.User,
-    version: 1,
+    version: 2, // 업데이트 버전 번호
     migrate(persistedState, version) {
       console.log("[user.ts] migrate", persistedState, version);
-      switch (version) {
-        case 0:
-          return { ...DEFAULT_USER_STATE };
-        default:
-          return persistedState;
+      const state = persistedState as any;
+      const newState = JSON.parse(
+        JSON.stringify(state),
+      ) as typeof DEFAULT_USER_STATE;
+
+      if ( version <= 1) {
+
+        return { ...DEFAULT_USER_STATE };
       }
-      return persistedState as any;
+
+      return newState as any;
+
+      // switch (version) {
+      //   case 0:
+      //     return { ...DEFAULT_USER_STATE };
+
+      //     // case 1:
+      //       // 버전 1에서 2로 마이그레이션
+      //       // DEFAULT_USER_STATE에 새 필드가 있거나 변환이 필요한 경우
+      //       // const updatedVersion = {
+      //         // ...persistedState,
+      //         // 필요에 따라 새 필드를 추가하거나 기존 필드를 업데이트합니다.
+      //         // Example: newField: 'defaultValue',
+      //       // };
+      //       // return updatedVersion;          
+          
+      //   default:
+      //     return persistedState;
+      // }
+      // return persistedState as any;
     },
   },
 );

@@ -27,6 +27,7 @@ async function handle(
   // }
   
   const baseUrl = "https://api-boki.foodinko.com";
+  // const baseUrl = "http://127.0.0.1:8000";
 
   console.log("[Foodinko Route] Base Url: ", baseUrl);
   console.log("[Foodinko Route] params.path: ", params.path);
