@@ -623,7 +623,7 @@ function _Chat() {
       console.log("[chat.tsx] sendMessageStatus: ", sendMessageStatus);
       console.log("[chat.tsx] handleCheckTurn isOver20Turn");
 
-      if (sendMessageStatus === SendMessageCallbackStatus.None) {
+      if (sendMessageStatus === SendMessageCallbackStatus.Finish) {
         enableKeyboard(false);
 
         handleFinishConversation();

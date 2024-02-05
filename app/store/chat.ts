@@ -63,7 +63,7 @@ export interface ChatSession {
   mask: Mask;
 }
 
-export const MAX_MESSAGE_COUNT: number = 20;
+export const MAX_MESSAGE_COUNT: number = 10;
 export const SESSION_LIMIT_MIN: number = 30;
 
 export const DEFAULT_TOPIC = Locale.Store.DefaultTopic;
