@@ -38,7 +38,7 @@ export const ShareBox = ({ onClose, onKakao, onInstagram, onCopyUrl, onMore }: S
   const handleKakaoClick = () => {
     console.log("[ShareBox] Kakao click!");
 
-    const imageShareKakao = "/images/sns-share-kakao";
+    const imageShareKakao = "/images/sns-share-kakao.png";
     const imageUrl = window.location.origin + imageShareKakao;
     console.log("[ShareBox] imageUrl: ", imageUrl);
 
@@ -49,6 +49,10 @@ export const ShareBox = ({ onClose, onKakao, onInstagram, onCopyUrl, onMore }: S
             title: 'BOKI 보키',
             description: '왜 나만보면 보키보키 하는지 모르겠어, 너도 BOKI 해볼래?',
             imageUrl: imageUrl,//'https://bokki.foodinko.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fbot.326e467b.png&w=64&q=75',
+            // http://172.30.1.56:3000/_next/image?url=%2Fimages%2Fbtn-kakao.png&w=128&q=75
+            // https://bokki.foodinko.com/_next/image?url=%2Fimages%2Fbtn-kakao.png&w=128&q=75
+            // https://bokki.foodinko.com/_next/image?url=%2Fimages%2Fsns-share-kakao.png&w=128&q=75
+            // http://172.30.1.56:3000/_next/image?url=%2Fimages%2Fsns-share-kakao.png&w=128&q=75
             link: {
               mobileWebUrl: 'https://bokki.foodinko.com',
               webUrl: 'https://bokki.foodinko.com',
