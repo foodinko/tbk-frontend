@@ -446,9 +446,9 @@ function _Chat() {
       if (error) {
         console.log("[chat.tsx] doSubmit error: ", error);
         // setIsLoading(false);
-        enableKeyboard(true);
+        // enableKeyboard(true);
 
-        // TODO: 오류 발생하면 초기화?
+        handleCheckTurn();
       } else {
         console.log("[chat.tsx] doSubmit status: ", status);
         if (status === SendMessageCallbackStatus.Finish) {
@@ -621,7 +621,7 @@ function _Chat() {
     // 대화 중이고 20턴 이상일 때
     if (isOver20Turn() && useUserStore.getState().isConversationStateInProgress() ) {
       console.log("[chat.tsx] sendMessageStatus: ", sendMessageStatus);
-      console.log("[chat.tsx] handleCheckTurn isOver20Turn");
+      console.log("[chat.tsx] handleCheckTurn isOver20Turn"); 
 
       if (sendMessageStatus === SendMessageCallbackStatus.Finish) {
         enableKeyboard(false);
