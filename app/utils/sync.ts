@@ -37,7 +37,6 @@ const LocalStateSetters = {
   [StoreKey.Config]: useAppConfig.setState,
   [StoreKey.Mask]: useMaskStore.setState,
   [StoreKey.Prompt]: usePromptStore.setState,
-  [StoreKey.User]: useUserStore.setState,
 } as const;
 
 const LocalStateGetters = {
@@ -46,7 +45,6 @@ const LocalStateGetters = {
   [StoreKey.Config]: () => getNonFunctionFileds(useAppConfig.getState()),
   [StoreKey.Mask]: () => getNonFunctionFileds(useMaskStore.getState()),
   [StoreKey.Prompt]: () => getNonFunctionFileds(usePromptStore.getState()),
-  [StoreKey.User]: () => getNonFunctionFileds(useUserStore.getState()),
 } as const;
 
 export type AppState = {
