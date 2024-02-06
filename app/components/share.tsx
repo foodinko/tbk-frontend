@@ -38,7 +38,7 @@ export const ShareBox = ({ onClose, onKakao, onInstagram, onCopyUrl, onMore }: S
   const handleKakaoClick = () => {
     console.log("[ShareBox] Kakao click!");
 
-    const imageShareKakao = "/images/sns-share-kakao.png";
+    const imageShareKakao = "/images/sns-share-kakao.jpg";
     const imageUrl = window.location.origin + imageShareKakao;
     console.log("[ShareBox] imageUrl: ", imageUrl);
 
