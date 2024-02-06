@@ -576,16 +576,6 @@ function _Chat() {
             sendMessageWelcomeLongTime(getUserName());
             handleStartConversation();
           }
-          // else if (isUnderZeroMessageCount()) {
-          //   console.log("[chat.tsx] handleCheckSession 메시지 개수가 0개 미만");
-          //   handleResetUser();
-          //   handleClearSessions();
-    
-          //   sendMessageWelcomeLongTime(getUserName());
-          //   visibleKeyboard(true);
-          //   enableKeyboard(false);
-          //   handleStartConversation();
-          // }
           
           setTimeout(() => {
             scrollToBottom();
@@ -634,15 +624,15 @@ function _Chat() {
 
         setTimeout(() => {
           sendMessageSmartStoreLink();
+          handleSmartStoreLinkProvided();
         }, 1200);
 
-        setTimeout(() => {
-          handleSmartStoreLinkProvided();
-        }, 1800);
+        // setTimeout(() => {
+        // }, 1800);
 
-        setTimeout(() => {
-          sendMessageSeeYouAgain();
-        }, 2400);
+        // setTimeout(() => {
+        //   sendMessageSeeYouAgain();
+        // }, 2400);
       }
     } else if (isUnder20Turn()) {
       enableKeyboard(true);
