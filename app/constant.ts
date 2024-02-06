@@ -68,11 +68,17 @@ export const UNFINISHED_INPUT = (id: string) => "unfinished-input-" + id;
 
 export const STORAGE_KEY = "chatgpt-next-web";
 
-export const USER_COOKIE_VALUE_KEY = "user-cookie-value";
-
 export const REQUEST_TIMEOUT_MS = 60000;
 
 export const EXPORT_MESSAGE_CLASS_NAME = "export-markdown";
+
+export const TBK_STORE_LINK_TURNS_OVER_PROVIDE = "TBK_STORE_LINK_TURNS_OVER_PROVIDE"; // 링크를 제공한 기록
+export const TBK_STORE_LINK_TURNS_OVER_CLICKED = "TBK_STORE_LINK_TURNS_OVER_CLICKED"; // 제공된 링크를 클릭한 기록
+export const TBK_CHATBOT_LINK_SHARED_KAKAO = "TBK_CHATBOT_LINK_SHARED_KAKAO"; // 카카오톡 공유하기 클릭
+export const TBK_CHATBOT_LINK_SHARED_INSTA = "TBK_CHATBOT_LINK_SHARED_INSTA"; // 인스타그램 공유하기 클릭
+export const TBK_CHATBOT_LINK_SHARED_URL_COPY = "TBK_CHATBOT_LINK_SHARED_URL_COPY"; // URL 복사하기 클릭
+
+export const TBK_RESTAURANT_LLM_CLICKED = "TBK_RESTAURANT_LLM_CLICKED"; // 음식점 클릭
 
 export enum ServiceProvider {
   OpenAI = "OpenAI",

@@ -1,6 +1,5 @@
 import { 
   StoreKey,
-  USER_COOKIE_VALUE_KEY,
 } from "../constant";
 import { getHeaders } from "../client/api";
 import { createPersistStore } from "../utils/store";
@@ -13,9 +12,9 @@ export const TBK_SOTRE_LINK_LLM_PROVIDE = "TBK_SOTRE_LINK_LLM_PROVIDE";
 export const TBK_SOTRE_LINK_LLM_CLICKED = "TBK_SOTRE_LINK_LLM_CLICKED";
 export const TBK_SOTRE_LINK_LLM_COPIED = "TBK_SOTRE_LINK_LLM_COPIED";
 
-export const TBK_TBK_RESTAURANT_LLM_PROVIDE = "TBK_TBK_RESTAURANT_LLM_PROVIDE";
-export const TBK_TBK_RESTAURANT_LLM_CLICKED = "TBK_TBK_RESTAURANT_LLM_CLICKED";
-export const TBK_TBK_RESTAURANT_LLM_COPIED = "TBK_TBK_RESTAURANT_LLM_COPIED";
+export const TBK_RESTAURANT_LLM_PROVIDE = "TBK_RESTAURANT_LLM_PROVIDE";
+export const TBK_RESTAURANT_LLM_CLICKED = "TBK_RESTAURANT_LLM_CLICKED";
+export const TBK_RESTAURANT_LLM_COPIED = "TBK_RESTAURANT_LLM_COPIED";
 
 // 프론트엔드 제공 스마트 스토어 링크(대화 20턴 이후)
 export const TBK_STORE_LINK_TURNS_OVER_PROVIDE =
@@ -72,6 +71,10 @@ export type StartConversationCallback = (
   conversationId?: number,
   greeting?: string,
   startTime?: string,
+) => void;
+
+export type RecordEventCallback = (
+  error: Error | null,
 ) => void;
 
 export const useUserStore = createPersistStore(
@@ -303,6 +306,55 @@ export const useUserStore = createPersistStore(
         })
         .catch((err) => {
           console.log("[user.ts] startConversation err: ", err);
+
+          fetchState = FETCH_STATE_NOT_STARTED;
+
+          callback(err);
+        })
+        .finally(() => {
+          fetchState = FETCH_STATE_NOT_STARTED;
+        });
+    },
+
+    async recordEvent(eventName:string, link_url: string, callback: RecordEventCallback) {
+      if (fetchState > FETCH_STATE_NOT_STARTED) return;
+      fetchState = FETCH_STATE_FETCHING;
+
+      console.log("[user.ts] recordEvent start");
+
+      const controller = new AbortController();
+      const path = "/api/foodinko/analytics/record_event";
+      const params = {
+        conversation_id: get().conversationId,
+        user_id: get().userId,
+        event_type: eventName,
+        link_url: link_url,
+      };
+      const payload = {
+        method: "POST",
+        body: JSON.stringify(params),
+        signal: controller.signal,
+        headers: getHeaders(),
+      };
+
+      fetch(path, payload)
+        .then((res: Response) => {
+          if (res.ok) {
+            console.log("[user.ts] recordEvent res: Response ", res);
+            return res.json();
+          } else {
+            throw new Error(res.statusText);
+          }
+        })
+        .then((res: any) => {
+          console.log("[user.ts] recordEvent res: any ", res);
+
+          fetchState = FETCH_STATE_NOT_STARTED;
+
+          callback(null);
+        })
+        .catch((err) => {
+          console.log("[user.ts] recordEvent err: ", err);
 
           fetchState = FETCH_STATE_NOT_STARTED;
 

@@ -93,6 +93,9 @@ import {
   Path,
   REQUEST_TIMEOUT_MS,
   UNFINISHED_INPUT,
+  TBK_STORE_LINK_TURNS_OVER_PROVIDE,
+  TBK_STORE_LINK_TURNS_OVER_CLICKED,
+  TBK_RESTAURANT_LLM_CLICKED,
 } from "../constant";
 import { Avatar } from "./emoji";
 import { ContextPrompts, MaskAvatar, MaskConfig } from "./mask";
@@ -624,7 +627,7 @@ function _Chat() {
 
         setTimeout(() => {
           sendMessageSmartStoreLink();
-          handleSmartStoreLinkProvided();
+          handleSmartStoreLinkProvide();
         }, 1200);
 
         // setTimeout(() => {
@@ -763,16 +766,40 @@ function _Chat() {
     }
   };
 
-  const handleSmartStoreLinkProvided = () => {
-    console.log("[chat.tsx] handleSmartStoreLinkProvided");
-    // TODO: 링크 제공 기록 API 호출
-    // useUserStore.getState().recordSmartStoreLink();
+  const handleSmartStoreLinkProvide = () => {
+    console.log("[chat.tsx] handleSmartStoreLinkProvide");
+    // 20턴 이후 링크 제공 기록 API 호출
+    const url = Locale.Store.BotSmartStoreLink;
+    useUserStore.getState().recordEvent(TBK_STORE_LINK_TURNS_OVER_PROVIDE, url, (error) => {
+      if (error) {
+        console.log("[chat.tsx] handleSmartStoreLinkProvide error: ", error);
+      } else {
+        console.log("[chat.tsx] handleSmartStoreLinkProvide success");
+      }
+    });
   };
 
-  const handleLinkClicked = () => {
-    console.log("[chat.tsx] handleLinkClicked");
-    // TODO: 링크 클릭 이벤트 API 호출
-    // TODO: 콜백 함수에서 handleStartConversation() 호출
+  const handleLinkClickedRecord = (url: string) => {
+    console.log("[chat.tsx] handleLinkClickedRecord");
+    // 링크 클릭 이벤트 API 호출
+
+    let eventType = TBK_RESTAURANT_LLM_CLICKED;
+
+    // smartstore.naver.com 문자열이 url 변수에 포함되어 있는지 체크
+    if (url.includes("smartstore.naver.com")) {
+      eventType = TBK_STORE_LINK_TURNS_OVER_CLICKED;
+    }
+
+    console.log("[chat.tsx] handleLinkClickedRecord eventType: ", eventType);
+
+    useUserStore.getState().recordEvent(eventType, url, (error) => {
+      if (error) {
+        console.log("[chat.tsx] handleLinkClickedRecord error: ", error);
+      } else {
+        console.log("[chat.tsx] handleLinkClickedRecord success");
+      }
+    });
+
     if (!useUserStore.getState().isConversationStateInProgress()) { 
       handleStartConversation();
       sendMessageWelcomeBack(getUserName());
@@ -824,11 +851,7 @@ function _Chat() {
     const win = window.open(url, "_blank");
     win?.focus();
 
-    // TODO: 링크 종류 구분
-    // 1. 20턴 이후 프론트에서 제공하는 스마트 스토어 링크
-    // 2. LLM에서 제공하는 스마트 스토어 링크
-    // 3. LLM에서 제공하는 추천 가게 링크
-    handleLinkClicked();
+    handleLinkClickedRecord(url);
   };
 
   const handleShareBoxClose = () => {

@@ -14,6 +14,16 @@ import {
   } from "../utils";
 import { loadKakaoSdk } from "../utils/loadKakaoSdk";
 
+import {
+  TBK_CHATBOT_LINK_SHARED_KAKAO,
+  TBK_CHATBOT_LINK_SHARED_INSTA,
+  TBK_CHATBOT_LINK_SHARED_URL_COPY,
+} from "../constant";
+
+import {
+  useUserStore,
+} from "../store";
+
 interface ShareBoxProps {
     onClose: () => void;
     onKakao: () => void;
@@ -34,9 +44,17 @@ export const ShareBox = ({ onClose, onKakao, onInstagram, onCopyUrl, onMore }: S
     onClose();
   };
 
-  
   const handleKakaoClick = () => {
     console.log("[ShareBox] Kakao click!");
+
+    const url = TBK_CHATBOT_LINK_SHARED_KAKAO;
+    useUserStore.getState().recordEvent(TBK_CHATBOT_LINK_SHARED_KAKAO, url, (error) => {
+      if (error) {
+        console.log("[chat.tsx] handleKakaoClick error: ", error);
+      } else {
+        console.log("[chat.tsx] handleKakaoClick success");
+      }
+    });
 
     const imageShareKakao = "/images/sns-share-kakao.png";
     const imageUrl = window.location.origin + imageShareKakao;
@@ -75,6 +93,16 @@ export const ShareBox = ({ onClose, onKakao, onInstagram, onCopyUrl, onMore }: S
 
   const handleInstagramClick = () => {
     console.log("[ShareBox] Instagram click!");
+
+    const url = TBK_CHATBOT_LINK_SHARED_INSTA;
+    useUserStore.getState().recordEvent(TBK_CHATBOT_LINK_SHARED_INSTA, url, (error) => {
+      if (error) {
+        console.log("[chat.tsx] handleInstagramClick error: ", error);
+      } else {
+        console.log("[chat.tsx] handleInstagramClick success");
+      }
+    });
+
     copyToClipboard(window.location.href);
 
     setTimeout(() => {
@@ -86,6 +114,16 @@ export const ShareBox = ({ onClose, onKakao, onInstagram, onCopyUrl, onMore }: S
 
   const handleCopyUrlClick = () => {
     console.log("[ShareBox] Copy");
+
+    const url = TBK_CHATBOT_LINK_SHARED_URL_COPY;
+    useUserStore.getState().recordEvent(TBK_CHATBOT_LINK_SHARED_URL_COPY, url, (error) => {
+      if (error) {
+        console.log("[chat.tsx] handleCopyUrlClick error: ", error);
+      } else {
+        console.log("[chat.tsx] handleCopyUrlClick success");
+      }
+    });
+
     copyToClipboard(window.location.href);
   };
 
